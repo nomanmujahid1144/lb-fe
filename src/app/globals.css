@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --brand-yellow: #e5ff00;
+  --brand-cyan: #00ffdd;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed1a;
+  }
+}
+
+body {
+  color: var(--foreground);
+  font-family: Inter, sans-serif;
+}
+.bg-gray-100 {
+  background: var(--brand-yellow);
+}
