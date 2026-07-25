@@ -1,0 +1,82 @@
+'use client';
+
+import { ArrowDownIcon } from '@/components/Icons';
+import React, { useState, useRef, useEffect } from 'react';
+
+interface ContactDetailsSelectProps {
+    selectedContact: string;
+    onSelect: (value: string) => void;
+    onReset: () => void;
+}
+
+const CONTACT_OPTIONS = [
+    { id: 'all', label: 'All' },
+    { id: 'email', label: 'Email' },
+    { id: 'phone', label: 'Phone' },
+];
+
+const ContactDetailsSelect: React.FC<ContactDetailsSelectProps> = ({ selectedContact, onSelect, onReset }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    return (
+        <div className="mb-6" ref={dropdownRef}>
+            <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-text-heading">Contact Details</h4>
+                <button onClick={onReset} className="text-xs text-icon-linkedin hover:text-icon-linkedin/95 cursor-pointer transition-colors font-medium">
+                    Reset
+                </button>
+            </div>
+            <div className="relative">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-neutral-200 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors text-left"
+                >
+                    <span className={selectedContact ? 'text-text-heading' : 'text-neutral-400'}>
+                        {selectedContact ? CONTACT_OPTIONS.find(o => o.id === selectedContact)?.label : 'Select contact details'}
+                    </span>
+                    <span className='p-2.5 bg-neutral-200/50 rounded-lg'>
+                        <ArrowDownIcon size={10} rotate={isOpen} />
+                    </span>
+                </button>
+                {isOpen && (
+                    <div className="absolute top-full mt-2 w-full bg-white border border-stroke rounded-lg shadow-lg z-50 animate-fade-in">
+                        <div className="px-3 py-2.5 border-b border-neutral-100">
+                            <p className="text-sm font-semibold text-text-heading">Select contact details</p>
+                        </div>
+                        <div className="py-2">
+                            {CONTACT_OPTIONS.map((option) => (
+                                <label key={option.id} className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 cursor-pointer transition-colors">
+                                    <input
+                                        type="radio"
+                                        name="contact"
+                                        checked={selectedContact === option.id}
+                                        onChange={() => { onSelect(option.id); setIsOpen(false); }}
+                                        className="custom-checkbox"
+                                    />
+                                    <span className="text-sm text-text-heading">{option.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="px-3 py-3 border-t border-neutral-100 flex gap-2">
+                            <button onClick={() => { onReset(); setIsOpen(false); }} className="flex-1 px-4 py-2 text-sm font-medium cursor-pointer text-neutral-600 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors">Reset</button>
+                            <button onClick={() => setIsOpen(false)} className="flex-1 px-4 py-2 text-sm font-medium cursor-pointer text-white bg-icon-linkedin hover:enabled:bg-icon-linkedin/95 rounded-lg transition-colors">Apply</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default ContactDetailsSelect;

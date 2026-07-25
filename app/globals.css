@@ -1,15 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ── TipTap / ProseMirror rich text styles ─────────────────────────────── */
-.ProseMirror {
-  outline: none;
+/* ── NEW DESIGN TOKENS ─────────────────────────────────────────────────── */
+@theme {
+  --font-sans: 'Work Sans', system-ui, sans-serif;
+
+  --color-primary: #E64233;
+  --color-primary-light: #FEE2E2;
+  --color-primary-dark: #DC2626;
+
+  --color-text-*: initial;
+  --color-text: #676F7E;
+  --color-text-heading: #252B37;
+  --color-text-breadcrumb: #878790;
+
+  --color-icon-*: initial;
+  --color-icon-box: #E8EAED;
+  --color-icon-linkedin: #34446F;
+
+  --color-info-*: initial;
+  --color-info-bg: #FEF3C7;
+  --color-info-text: #B45309;
+
+  --color-stroke: #DCDFE5;
+  --color-percentage: #1B7E44;
+  --color-hero-gradient: #23365C;
+  --color-card-bg: #f8f8f8;
+
+  --color-primary-button: #0B64F4;
+  --color-calendar-picker: #2F80ED;
+
+  /* Phase Colors */
+  --color-phase-yellow: #FFECB6;
+  --color-phase-purple: #D0C8FF;
+  --color-phase-pink: #FFD9EC;
+  --color-phase-green: #DCFFD2;
+  --color-phase-green-dark: #16A249;
+  --color-phase-lavender: #ECE1FF;
+  --color-phase-blue: #D5E6FF;
+  --color-phase-light-yellow: #FAF5B3;
+  --color-phase-cyan: #BFFFF9;
+
+  /* Sentiment Colors */
+  --color-sentiment-positive: #DCFFD2;
+  --color-sentiment-positive-dark: #16A249;
+  --color-sentiment-negative: #FFD9EC;
+  --color-sentiment-negative-dark: #DC2626;
+  --color-sentiment-neutral: #FAF5B3;
+  --color-sentiment-neutral-dark: #B45309;
+  --color-sentiment-dmu: #FFECB6;
+  --color-sentiment-dmu-dark: #B45309;
+
+  --color-neutral-*: initial;
+  --color-neutral-50: #F9FAFB;
+  --color-neutral-100: #F3F4F6;
+  --color-neutral-200: #E5E7EB;
+  --color-neutral-300: #D1D5DB;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #6B7280;
+  --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #111827;
+
+  --font-size-2xs: 0.625rem;
+
+  --spacing-banner-sm: 160px;
+  --spacing-banner-md: 240px;
+  --spacing-banner-lg: 280px;
 }
+
+/* ── OLD DESIGN CSS VARIABLES (kept only for old pages not yet migrated) ── */
+/* TODO: Remove these once all pages are migrated to new design */
+:root {
+  --navy: #364570;
+  --navy-dark: #2a3657;
+  --navy-light: #4a5d8a;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --muted-bg: #f3f4f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+}
+
+/* ── TipTap / ProseMirror (kept — no conflict with new design) ─────────── */
+.ProseMirror { outline: none; }
 .ProseMirror p { margin: 0 0 0.4em; }
 .ProseMirror p:last-child { margin-bottom: 0; }
-.ProseMirror ul,
-.ProseMirror ol { padding-left: 1.25rem; margin: 0.25rem 0 0.4rem; }
+.ProseMirror ul, .ProseMirror ol { padding-left: 1.25rem; margin: 0.25rem 0 0.4rem; }
 .ProseMirror ul { list-style-type: disc; }
 .ProseMirror ol { list-style-type: decimal; }
 .ProseMirror li { margin-bottom: 0.1rem; }
@@ -20,7 +99,6 @@
 .ProseMirror h3 { font-size: 1rem; font-weight: 600; margin: 0.4rem 0 0.2rem; }
 .ProseMirror blockquote { border-left: 3px solid #d1d5db; padding-left: 0.75rem; color: #6b7280; }
 .ProseMirror hr { border: none; border-top: 1px solid #e5e7eb; margin: 0.75rem 0; }
-/* placeholder */
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   color: #9ca3af;
@@ -29,51 +107,20 @@
   height: 0;
 }
 
-:root {
-  /* Core brand colors */
-  --primary: #db2f43;
-  --primary-dark: #b82536;
-  --primary-light: #ff4d63;
-  --navy: #364570;
-  --navy-dark: #2a3657;
-  --navy-light: #4a5d8a;
-
-  /* Neutral colors */
-  --background: #f8f9fa;
-  --foreground: #1a1a1a;
-  --card-bg: #ffffff;
-  --border: #e5e7eb;
-  --muted: #6b7280;
-  --muted-bg: #f3f4f6;
-
-  /* Semantic colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #3b82f6;
-}
-
-/* Dark mode disabled - keeping styles for potential future use
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #ffffff;
-    --card-bg: #2d2d2d;
-    --border: #404040;
-    --muted: #9ca3af;
-    --muted-bg: #374151;
-  }
-}
-*/
-
-a { cursor: pointer; text-decoration: underline;}
+/* ── BODY (new design) ─────────────────────────────────────────────────── */
 body {
-  color: var(--foreground);
-  background: var(--background);
-  min-height: 100vh;
+  @apply bg-white antialiased;
 }
 
-/* Modern card styles */
+/* a { cursor: pointer; text-decoration: underline; } */
+
+/* ── OLD DESIGN COMPONENT STYLES ──────────────────────────────────────────
+   TODO: Remove these one by one as each page gets migrated to new design.
+   These only apply to old pages that haven't been replaced yet.
+────────────────────────────────────────────────────────────────────────── */
+
+/* .card — commented out, new design has its own card styles */
+
 .card {
   background: var(--card-bg);
   border-radius: 0.75rem;
@@ -82,145 +129,90 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
-
-.card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Button styles */
-.btn {
-  
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  font-weight: 300;
-  background-color: #364570;
-  transition: all 0.2s ease;
-}
-
-.btn-primary {
-  background: #364570;
-  padding: auto;
-  color: white;
-}
-
-.btn-tertiary {
-  background: #4c4d4f;
-  padding: auto;
-  color: white;
-}
-
-.btn-fourth {
-  background: #000000;
-  padding: auto;
-  color: white;
-}
-
-.btn-fifth {
-  background: #9b0000;
-  padding: auto;
-  color: white;
-}
+.card:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
 
 
-.btn-primary-alt {
-  background: #36457005;
-  border: 1px solid #364570;
-  color: black;
-  width: 120px;
-}
+/* .btn — commented out, new design has its own button styles */
 
-.btn-icon {
-  background: #36457005;
+.btn { border-radius: 0.5rem; padding: 0.5rem; font-weight: 300; background-color: #364570; transition: all 0.2s ease; }
+.btn-primary { background: #364570; padding: auto; color: white; }
+.btn-tertiary { background: #4c4d4f; padding: auto; color: white; }
+.btn-fourth { background: #000000; padding: auto; color: white; }
+.btn-fifth { background: #9b0000; padding: auto; color: white; }
+.btn-primary-alt { background: #36457005; border: 1px solid #364570; color: black; width: 120px; }
+.btn-icon { background: #36457005; color: black; }
+.btn-icon-task { background: #36457005; color: black; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--primary); color: white; }
+.btn-secondary-alt { background: white; border: 1px solid #364570; color: black; width: 120px; }
+.btn-secondary-alt2 { background: rgb(188, 58, 58); border: 1px solid #364570; color: white; width: 120px; }
+.btn-secondary:hover { background: var(--navy-dark); }
 
-  color: black;
-  
-}
-.btn-icon-task {
-  background: #36457005;
 
-  color: black;
-  
-}
-.btn-primary:hover {
-  background: var(--primary-dark);
-}
+/* .input — commented out, new design has its own input styles */
 
-.btn-secondary {
-  background: var(--primary);
-  color: white;
-}
+.input { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; transition: all 0.2s ease; }
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(219, 47, 67, 0.1); }
 
-.btn-secondary-alt {
-  background: white;
-  border: 1px solid #364570;
-  color: black;
-  width: 120px;
-}
 
-.btn-secondary-alt2 {
-  background: rgb(188, 58, 58);
-  border: 1px solid #364570;
-  color: white;
-  width: 120px;
-}
-.btn-secondary:hover {
-  background: var(--navy-dark);
-}
+/* .table — commented out, new design has its own table styles */
 
-/* Form elements */
-.input {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  transition: all 0.2s ease;
-}
+.table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.table th { background: var(--muted-bg); font-weight: 600; text-align: left; padding: 0.75rem 1rem; }
+.table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
 
-.input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(219, 47, 67, 0.1);
-}
 
-/* Table styles */
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
+/* text/color utilities — commented out, new design has its own */
 
-.table th {
-  background: var(--muted-bg);
-  font-weight: 600;
-  text-align: left;
-  padding: 0.75rem 1rem;
-}
-
-.table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-/* Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-/* Utility classes */
-.text-primary { color: var(--primary); font-weight: 300;}
-h1.text-primary  { color: var(--primary); font-weight: 500; font-size: 24px;}
-.text-navy { color: var(--navy); font-weight: 100;}
-.bg-primary { background: var(--primary); }
+/* .text-primary { color: var(--primary); font-weight: 300; } */
+h1.text-primary { color: var(--primary); font-weight: 500; font-size: 24px; }
+.text-navy { color: var(--navy); font-weight: 100; }
+/* .bg-primary { background: var(--primary); } */
 .bg-navy { background: var(--navy); }
-.border-primary { border-color: var(--primary); }
+/* .border-primary { border-color: var(--primary); } */
 .border-navy { border-color: var(--navy); }
+
+
+/* ── NEW DESIGN UTILITIES ──────────────────────────────────────────────── */
+@layer utilities {
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+
+  .text-2xs {
+    font-size: var(--font-size-2xs);
+    line-height: 1rem;
+  }
+}
+
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(-20px) scaleX(0.95); }
+  60% { transform: translateX(5px) scaleX(1.02); }
+  100% { opacity: 1; transform: translateX(0) scaleX(1); }
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer components {
+  .custom-checkbox {
+    @apply appearance-none w-4 h-4 border-2 border-neutral-300 rounded-md bg-white cursor-pointer transition-all relative;
+  }
+  .custom-checkbox:checked {
+    @apply bg-icon-linkedin border-icon-linkedin;
+  }
+  .custom-checkbox:checked::after {
+    content: '';
+    @apply absolute;
+    left: 50%;
+    top: 40%;
+    width: 0.375rem;
+    height: 0.625rem;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  .custom-checkbox:hover { @apply border-icon-linkedin/50; }
+  .custom-checkbox:focus { @apply outline-none ring-2 ring-icon-linkedin/20; }
+}
