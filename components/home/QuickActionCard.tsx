@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChartIcon, UsersGroupIcon, UserListIcon, ChatIcon, ArrowRightIcon } from '../Icons';
 import { QuickAction } from '@/types/home';
+import { useRouter } from 'next/navigation';
 
 interface QuickActionCardProps {
   action: QuickAction;
@@ -15,6 +16,9 @@ const iconMap = {
 };
 
 const QuickActionCard: React.FC<QuickActionCardProps> = ({ action, index }) => {
+
+  const router = useRouter();
+
   const IconComponent = iconMap[action.icon];
   const isPrimary = action.variant === 'primary';
 
@@ -44,6 +48,7 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({ action, index }) => {
 
         {/* Button */}
         <button
+          onClick={() => action.href && router.push(action.href)}
           className={`w-full flex items-center justify-between px-3 md:px-4 py-2 md:py-2.5 cursor-pointer rounded-lg font-medium text-xs md:text-sm transition-all duration-200 group ${isPrimary
             ? 'bg-primary text-white hover:bg-primary-dark shadow-sm hover:shadow-md'
             : 'bg-white text-text-heading border border-stroke hover:bg-white/10'

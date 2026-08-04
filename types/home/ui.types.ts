@@ -16,6 +16,7 @@ export interface QuickAction {
   buttonText: string;
   variant: 'default' | 'primary';
   bgColor: string;
+  href?: string;
 }
 
 export type ActivityType = 'new_lead' | 'meeting_booked' | 'message_replied' | 'phase_changed';
