@@ -17,10 +17,10 @@ export const API_CONFIG = {
             LEAD_PHASE_OPTIONS: '/api/content-type-builder/content-types/api::campaign-prospect.campaign-prospect',
         },
         BACKOFFICE: {
-            PROCESS: '/api/data-sender/lead-phase',
+            PROCESS: '/api/data-senders/lead_phase',
         },
         USERS: {
-            BY_UUID: (uuid: string) => `/api/users/uuid/${uuid}`,
+            BY_UUID: (uuid: string) => `/api/users-permissions/users/uuid/${uuid}`,
         },
     },
 } as const;

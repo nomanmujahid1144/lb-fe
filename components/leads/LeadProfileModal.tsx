@@ -36,6 +36,7 @@ interface LeadProfileModalProps {
     onPhaseChange: (leadId: string, newPhase: string, newPhaseColor: string) => void;
     onSentimentChange: (leadId: string, newSentiment: string) => void;
     initialTab?: string;
+    onCrmChange?: (leadId: string) => void;
 }
 
 // Timeline item type
