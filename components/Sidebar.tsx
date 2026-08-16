@@ -17,25 +17,25 @@ type UserType = 'Admin' | 'Customer' | 'Manager' | 'Backoffice' | 'Chatter' | st
 
 // Public menu items — role-filtered
 const menuItems: MenuItem[] = [
-  { id: 'home',      label: 'Home',             href: '/dashboard',            icon: HomeScreenIcon },
-  { id: 'leads',     label: 'Leads',            href: '/dashboard/follow_up',  icon: MultiPersonsIcon },
-  { id: 'statistics',label: 'Statistics',       href: '/dashboard/statistics', icon: ChartIcon },
-  { id: 'database',  label: 'All Campaign Data',href: '/dashboard/all_prospects', icon: DBIcon },
-  { id: 'lists',     label: 'Lists',            href: '/dashboard/lists',      icon: ListIcon },
-  { id: 'setup',     label: 'Setup',            href: '/dashboard/customer-setups', icon: SettingIcon },
-  { id: 'blacklist', label: 'Blacklist',        href: '/dashboard/master_database?tab=blacklist', icon: BlockListIcon },
+  { id: 'home', label: 'Home', href: '/dashboard', icon: HomeScreenIcon },
+  { id: 'leads', label: 'Leads', href: '/dashboard/follow_up', icon: MultiPersonsIcon },
+  { id: 'statistics', label: 'Statistics', href: '/dashboard/statistics', icon: ChartIcon },
+  { id: 'database', label: 'All Campaign Data', href: '/dashboard/all_prospects', icon: DBIcon },
+  { id: 'lists', label: 'Lists', href: '/dashboard/lists', icon: ListIcon },
+  { id: 'setup', label: 'Setup', href: '/dashboard/customer-setups', icon: SettingIcon },
+  { id: 'blacklist', label: 'Blacklist', href: '/dashboard/master_database?tab=blacklist', icon: BlockListIcon },
   // Private Chats — hidden for Manager
-  { id: 'chats',     label: 'Private Chats',    href: '/dashboard/linked_in_chats', icon: ChatIcon, roles: ['Admin', 'Customer', 'Backoffice', 'Chatter'] },
+  { id: 'chats', label: 'Private Chats', href: '/dashboard/linked_in_chats', icon: ChatIcon, roles: ['Admin', 'Customer', 'Backoffice', 'Chatter'] },
 ];
 
 // Internal menu items — only for Admin and Backoffice
 const internalMenuItems: MenuItem[] = [
-  { id: 'management',      label: 'Management Dashboard', href: '/dashboard/statistics',    icon: HomeScreenIcon },
-  { id: 'master-database', label: 'Master Database',      href: '/dashboard/master_database', icon: DBIcon },
-  { id: 'ai-analysis',     label: 'AI Analysis',          href: '/dashboard/ai_analysis',   icon: ChartIcon },
-  { id: 'robot-tasks',     label: 'Robot Tasks',          href: '/dashboard/robot_tasks',   icon: SettingIcon },
-  { id: 'chatter-tasks',   label: 'Chatter Tasks',        href: '/dashboard/chatter_tasks', icon: ChatIcon },
-  { id: 'data-import',     label: 'Data Import',          href: '/dashboard/data_import',   icon: ListIcon },
+  { id: 'management', label: 'Management Dashboard', href: '/dashboard/statistics', icon: HomeScreenIcon },
+  { id: 'master-database', label: 'Master Database', href: '/dashboard/master_database', icon: DBIcon },
+  { id: 'ai-analysis', label: 'AI Analysis', href: '/dashboard/ai_analysis', icon: ChartIcon },
+  { id: 'robot-tasks', label: 'Robot Tasks', href: '/dashboard/robot_tasks', icon: SettingIcon },
+  { id: 'chatter-tasks', label: 'Chatter Tasks', href: '/dashboard/chatter_tasks', icon: ChatIcon },
+  { id: 'data-import', label: 'Data Import', href: '/dashboard/data_import', icon: ListIcon },
 ];
 
 const INTERNAL_ROLES: UserType[] = ['Admin', 'Backoffice'];
@@ -59,14 +59,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
         const user = JSON.parse(storedUser);
         setUserType(user.type || '');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // Persist collapse state to localStorage — fix for point 13
   const handleToggleCollapse = () => {
     const newVal = !isCollapsed;
     setIsCollapsed(newVal);
-    try { localStorage.setItem('nova-sidebar-collapsed', JSON.stringify(newVal)); } catch {}
+    try { localStorage.setItem('nova-sidebar-collapsed', JSON.stringify(newVal)); } catch { }
   };
 
   // Filter menu item by role
@@ -93,13 +93,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
         key={item.id}
         href={item.href}
         onClick={() => setIsMobileOpen(false)}
-        className={`flex items-center gap-3 py-2.5 mb-1 rounded-lg text-sm font-medium transition-all duration-200 relative group ${
-          active
+        className={`flex items-center gap-3 py-2.5 mb-1 rounded-lg text-sm font-medium transition-all duration-200 relative group ${active
             ? 'bg-primary/5 text-primary'
             : isInternalItem
               ? 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900'
               : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
-        } ${isCollapsed ? 'justify-center px-0 lg:px-0' : 'px-3'}`}
+          } ${isCollapsed ? 'justify-center px-0 lg:px-0' : 'px-3'}`}
         title={isCollapsed ? item.label : ''}
       >
         <Icon
