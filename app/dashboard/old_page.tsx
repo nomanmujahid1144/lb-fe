@@ -446,7 +446,7 @@ export default function DashboardPage() {
     // Prevent hydration mismatch by not rendering until mounted and user is loaded
     if (!isMounted || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
                 <div className="text-[#47577d]">Loading...</div>
             </div>
         );
@@ -484,7 +484,7 @@ export default function DashboardPage() {
         return str.substring(0, maxLength) + '...';
     };
     return (
-        <div className="min-h-screen">
+        <div className="min-h-[calc(100vh-4rem)]">
             {/* <nav className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">

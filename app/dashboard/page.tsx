@@ -153,7 +153,7 @@ export default function DashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen px-6 md:px-0">
+        <div className="min-h-[calc(100vh-4rem)] px-6 md:px-0">
             <HeroBanner userName={user.username} />
             <main className="px-0 md:px-4 lg:px-6 py-6 md:py-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">

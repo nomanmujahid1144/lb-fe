@@ -263,8 +263,8 @@ export default function ListsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {user && <Navigation user={user} onLogout={handleLogout} currentPage="Lists" pageIcon={FaListUl} />}
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
+            {/* {user && <Navigation user={user} onLogout={handleLogout} currentPage="Lists" pageIcon={FaListUl} />} */}
 
             <div className="px-3 sm:px-6 mt-4 sm:mt-6">
                 {/* Control bar */}

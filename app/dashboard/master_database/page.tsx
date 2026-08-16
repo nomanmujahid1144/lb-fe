@@ -4445,15 +4445,15 @@ export default function MasterDatabasePage() {
 
     if (!isMounted || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
                 <div className="text-[#47577d]">Loading...</div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-0">
-            <Navigation user={user} onLogout={handleLogout} currentPage="Master Database" pageIcon={FaDatabase} />
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+            {/* <Navigation user={user} onLogout={handleLogout} currentPage="Master Database" pageIcon={FaDatabase} /> */}
             <div className="px-6 mt-6">
                 {/* Simplified Filter Bar - Only Customer and Controls */}
                 <div className="bg-white shadow-md rounded-lg p-2 mb-4 flex items-start gap-4">

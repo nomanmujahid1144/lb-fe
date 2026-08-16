@@ -1219,7 +1219,7 @@ export default function CustomerSetupsPage() {
 
   if (!isMounted || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
         <ClipLoader size={32} color="#364570" />
       </div>
     );
@@ -1237,9 +1237,9 @@ export default function CustomerSetupsPage() {
   } : {};
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
       <Toaster position="top-center" />
-      <Navigation user={user} onLogout={handleLogout} currentPage="Customer Setups" pageIcon={FiFileText} />
+      {/* <Navigation user={user} onLogout={handleLogout} currentPage="Customer Setups" pageIcon={FiFileText} /> */}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 

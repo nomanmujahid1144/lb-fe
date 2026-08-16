@@ -828,8 +828,8 @@ export default function AllProspectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-0">
-      {user && <Navigation user={user} onLogout={() => {}} currentPage="All Prospects" pageIcon={FaPeopleGroup} />}
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+      {/* {user && <Navigation user={user} onLogout={() => {}} currentPage="All Prospects" pageIcon={FaPeopleGroup} />} */}
       <div className="max-w-7xl mx-auto px-6 mt-6">
         {/* Filter Bar */}
         <div className="bg-white shadow-md rounded-lg p-4 mb-6 flex flex-col gap-4">

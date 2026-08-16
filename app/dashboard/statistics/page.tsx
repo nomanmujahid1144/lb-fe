@@ -857,8 +857,8 @@ export default function CampaignsPage() {
     );
 
     return (
-    <div className="min-h-screen bg-gray-0">
-        {user && <Navigation user={user} onLogout={handleLogout} currentPage={activeTab === 'management' ? 'Management Dashboard' : 'Statistics'} pageIcon={MdCampaign} />}
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+        {/* {user && <Navigation user={user} onLogout={handleLogout} currentPage={activeTab === 'management' ? 'Management Dashboard' : 'Statistics'} pageIcon={MdCampaign} />} */}
         <div className="max-w-7xl mx-auto px-6 mt-6">
 
         {/* Profile Selection - Global Filter */}

@@ -776,8 +776,8 @@ export default function RobotTasksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-0">
-      {user && <Navigation user={user} onLogout={handleLogout} currentPage="Robot Tasks" pageIcon={FaRobot} />}
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+      {/* {user && <Navigation user={user} onLogout={handleLogout} currentPage="Robot Tasks" pageIcon={FaRobot} />} */}
 
       <div className="max-w-7xl mx-auto px-6 mt-6">
         <div className="bg-white shadow-md rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-4">

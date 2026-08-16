@@ -647,8 +647,8 @@ export default function AnalyzeCompaniesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {user && <Navigation user={user} onLogout={() => {}} currentPage="AI Company Analysis" pageIcon={GiBrain} />}
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
+      {/* {user && <Navigation user={user} onLogout={() => {}} currentPage="AI Company Analysis" pageIcon={GiBrain} />} */}
       
       <div className="px-6 py-8">
         {/* Header */}

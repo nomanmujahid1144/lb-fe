@@ -383,8 +383,8 @@ export default function LinkedInChatsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-0">
-            {user && <Navigation user={user} onLogout={handleLogout} currentPage="Non-Campaign Chats (last month)" pageIcon={IoIosChatbubbles} />}
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+            {/* {user && <Navigation user={user} onLogout={handleLogout} currentPage="Non-Campaign Chats (last month)" pageIcon={IoIosChatbubbles} />} */}
 
             <div className="max-w-7xl mx-auto px-6 mt-6">
                 <div className="bg-white shadow-md rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">

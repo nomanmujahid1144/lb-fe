@@ -1573,9 +1573,9 @@ if (totalProspects === 0) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-0">
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
             {/* Show navigation even without user for debugging */}
-            {user && <Navigation user={user} onLogout={handleLogout} currentPage="Follow-up" pageIcon={FaPeopleGroup} />}
+            {/* {user && <Navigation user={user} onLogout={handleLogout} currentPage="Follow-up" pageIcon={FaPeopleGroup} />} */}
 
             <div className="max-w-7xl mx-auto px-6 mt-6">
                 {/* Filter Bar */}

@@ -62,15 +62,15 @@ export default function RobotTasksOverviewPage() {
 
     if (!isMounted || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
                 <ClipLoader size={32} color="#364570" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navigation user={user} onLogout={handleLogout} currentPage="Robot Tasks" pageIcon={FaRobot} />
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
+            {/* <Navigation user={user} onLogout={handleLogout} currentPage="Robot Tasks" pageIcon={FaRobot} /> */}
 
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="mb-6">

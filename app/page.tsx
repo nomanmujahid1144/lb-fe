@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function Home() {
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-6">
+        <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-6">
             <div className="bg-white shadow-lg rounded-lg p-8 max-w-md text-center">
                 <div className="flex justify-center mb-6">
                     <Image src="/logo.png" alt="Leadblocks Logo" width={270} height={72} />

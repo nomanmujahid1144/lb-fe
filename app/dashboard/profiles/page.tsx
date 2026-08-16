@@ -135,8 +135,8 @@ export default function ProfilesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            {user ? <Navigation user={user} onLogout={handleLogout} /> : <p>Loading...</p>}
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-100">
+            {/* {user ? <Navigation user={user} onLogout={handleLogout} /> : <p>Loading...</p>} */}
             <div className="max-w-6xl mx-auto py-10 px-6">
                 <h1 className="text-4xl font-bold text-gray-800 mb-6">Active Profiles</h1>
                 {loading ? (

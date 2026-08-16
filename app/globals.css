@@ -2,7 +2,7 @@
 
 /* ── NEW DESIGN TOKENS ─────────────────────────────────────────────────── */
 @theme {
-  --font-sans: 'Work Sans', system-ui, sans-serif;
+  --font-sans: var(--font-work-sans), system-ui, sans-serif;
 
   --color-primary: #E64233;
   --color-primary-light: #FEE2E2;

@@ -170,8 +170,8 @@ export default function CampaignsPage() {
         : campaigns.filter(c => c.profile_name === selectedProfile);
 
     return (
-        <div className="min-h-screen bg-gray-0">
-            {user && <Navigation user={user} onLogout={handleLogout} />}
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-0">
+            {/* {user && <Navigation user={user} onLogout={handleLogout} />} */}
 
             <div className="max-w-7xl mx-auto px-6 flex gap-6 items-start">
                 <div className="w-56 flex-shrink-0 bg-white shadow-md rounded-lg p-4 h-fit mt-6">
