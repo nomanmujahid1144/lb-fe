@@ -66,12 +66,14 @@ export default function LeadsPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLead, setSelectedLead] = useState<any>(null);
-    const [collapsedColumns, setCollapsedColumns] = useState<Record<string, boolean>>(() => {
+    const [collapsedColumns, setCollapsedColumns] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
         try {
-            const saved = localStorage.getItem('nova-collapsed-columns');
-            return saved ? JSON.parse(saved) : {};
-        } catch { return {}; }
-    });
+            const saved = localStorage.getItem('leadblocks-collapsed-columns');
+            if (saved) setCollapsedColumns(JSON.parse(saved));
+        } catch { }
+    }, []);
 
     const [editPhaseModalOpen, setEditPhaseModalOpen] = useState(false);
     const [deletePhaseModalOpen, setDeletePhaseModalOpen] = useState(false);
@@ -190,7 +192,7 @@ export default function LeadsPage() {
     const handleToggleCollapse = (columnId: string, collapsed: boolean) => {
         setCollapsedColumns(prev => {
             const updated = { ...prev, [columnId]: collapsed };
-            try { localStorage.setItem('nova-collapsed-columns', JSON.stringify(updated)); } catch {}
+            try { localStorage.setItem('leadblocks-collapsed-columns', JSON.stringify(updated)); } catch { }
             return updated;
         });
     };

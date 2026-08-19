@@ -11,56 +11,75 @@ interface HeaderProps {
   onMenuClick: () => void;
 }
 
-// Breadcrumb config — maps route to label + icon
-const breadcrumbMap: Record<string, { label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = {
-  '/dashboard': { label: 'Home', icon: HomeIcon },
-  '/dashboard/follow_up': { label: 'Leads', icon: MultiPersonsIcon },
-  '/dashboard/statistics': { label: 'Statistics', icon: ChartIcon },
-  '/dashboard/all_prospects': { label: 'All Campaign Data', icon: DBIcon },
-  '/dashboard/lists': { label: 'Lists', icon: ListIcon },
-  '/dashboard/customer-setups': { label: 'Setup', icon: SettingIcon },
-  '/dashboard/master_database': { label: 'Master Database', icon: DBIcon },
-  '/dashboard/linked_in_chats': { label: 'Private Chats', icon: ChatIcon },
-  '/dashboard/robot_tasks': { label: 'Robot Tasks', icon: SettingIcon },
-  '/dashboard/chatter_tasks': { label: 'Chatter Tasks', icon: ChatIcon },
-  '/dashboard/all_companies': { label: 'All Companies', icon: DBIcon },
-  '/dashboard/robot_tasks_overview': { label: 'Robot Tasks Overview', icon: SettingIcon },
-  '/dashboard/profiles': { label: 'Profiles', icon: MultiPersonsIcon },
-  '/dashboard/campaigns': { label: 'Campaigns', icon: ChartIcon },
-  '/dashboard/import_prospects': { label: 'Import Prospects', icon: DBIcon },
-  '/dashboard/import_companies': { label: 'Import Companies', icon: DBIcon },
-  '/dashboard/import_campaigns': { label: 'Import Campaigns', icon: DBIcon },
-  '/dashboard/import_blacklist': { label: 'Import Blacklist', icon: BlockListIcon },
-  '/dashboard/import_chats': { label: 'Import Chats', icon: ChatIcon },
-  '/dashboard/import_tasks': { label: 'Import Tasks', icon: ListIcon },
-  '/dashboard/create_chatter_tasks': { label: 'Create Chatter Tasks', icon: ChatIcon },
-  '/dashboard/disconnect_prospects': { label: 'Disconnect Prospects', icon: DBIcon },
-  '/dashboard/import_scrapes': { label: 'Import Scrapes', icon: DBIcon },
+interface BreadcrumbEntry {
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+// Exact route matches
+const exactBreadcrumbMap: Record<string, BreadcrumbEntry> = {
+  '/dashboard':                         { label: 'Home',                   icon: HomeIcon },
+  '/dashboard/follow_up':               { label: 'Leads',                  icon: MultiPersonsIcon },
+  '/dashboard/statistics':              { label: 'Statistics',             icon: ChartIcon },
+  '/dashboard/all_prospects':           { label: 'All Campaign Data',      icon: DBIcon },
+  '/dashboard/lists':                   { label: 'Lists',                  icon: ListIcon },
+  '/dashboard/customer-setups':         { label: 'Setup',                  icon: SettingIcon },
+  '/dashboard/master_database':         { label: 'Master Database',        icon: DBIcon },
+  '/dashboard/linked_in_chats':         { label: 'Private Chats',          icon: ChatIcon },
+  '/dashboard/robot_tasks':             { label: 'Robot Tasks',            icon: SettingIcon },
+  '/dashboard/robot_tasks_overview':    { label: 'Robot Tasks Overview',   icon: SettingIcon },
+  '/dashboard/chatter_tasks':           { label: 'Chatter Tasks',          icon: ChatIcon },
+  '/dashboard/create_chatter_tasks':    { label: 'Create Chatter Tasks',   icon: ChatIcon },
+  '/dashboard/profiles':                { label: 'Profiles',               icon: MultiPersonsIcon },
+  '/dashboard/campaigns':               { label: 'Campaigns',              icon: ChartIcon },
+  '/dashboard/analyze_companies':       { label: 'Analyze Companies',      icon: DBIcon },
+  '/dashboard/all_companies':           { label: 'All Companies',          icon: DBIcon },
+  '/dashboard/setup':                   { label: 'Setup',                  icon: SettingIcon },
+  '/dashboard/import_prospects':        { label: 'Import Prospects',       icon: DBIcon },
+  '/dashboard/import_companies':        { label: 'Import Companies',       icon: DBIcon },
+  '/dashboard/import_campaigns':        { label: 'Import Campaigns',       icon: DBIcon },
+  '/dashboard/import_blacklist':        { label: 'Import Blacklist',       icon: BlockListIcon },
+  '/dashboard/import_chats':            { label: 'Import Chats',           icon: ChatIcon },
+  '/dashboard/import_tasks':            { label: 'Import Tasks',           icon: ListIcon },
+  '/dashboard/import_scrapes':          { label: 'Import Scrapes',         icon: DBIcon },
+  '/dashboard/disconnect_prospects':    { label: 'Disconnect Prospects',   icon: DBIcon },
+};
+
+// Prefix matches for dynamic routes — order matters, more specific first
+const prefixBreadcrumbMap: Array<{ prefix: string } & BreadcrumbEntry> = [
+  { prefix: '/dashboard/company-lists',  label: 'Company Lists',   icon: ListIcon },
+  { prefix: '/dashboard/prospect-lists', label: 'Prospect Lists',  icon: MultiPersonsIcon },
+];
+
+// Resolve breadcrumb from pathname
+const resolveBreadcrumb = (pathname: string): BreadcrumbEntry | null => {
+  // Try exact match first
+  if (exactBreadcrumbMap[pathname]) return exactBreadcrumbMap[pathname];
+  // Try prefix match for dynamic routes
+  for (const entry of prefixBreadcrumbMap) {
+    if (pathname.startsWith(entry.prefix)) {
+      return { label: entry.label, icon: entry.icon };
+    }
+  }
+  return null;
 };
 
 const Header = ({ onMenuClick }: HeaderProps) => {
     const pathname = usePathname();
     const router = useRouter();
 
-    // Get current page breadcrumb
-    const currentPage = breadcrumbMap[pathname];
-
-    // Get username from localStorage
-    const getUsername = (): string => {
-        try {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                const user = JSON.parse(storedUser);
-                return user.username || '';
-            }
-        } catch {}
-        return '';
-    };
+    const currentPage = resolveBreadcrumb(pathname);
 
     const [username, setUsername] = React.useState('');
 
     React.useEffect(() => {
-        setUsername(getUsername());
+        try {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                setUsername(user.username || '');
+            }
+        } catch {}
     }, []);
 
     const handleLogout = async () => {
@@ -75,7 +94,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     };
 
     return (
-        <header className="bg-white fixed top-0 left-0 right-0 z-50 pt-2">
+        <header className="bg-white fixed top-0 left-0 right-0 z-50 border-b border-stroke">
             <div className="flex items-center justify-between h-16 px-4 md:px-6">
                 {/* Left: Hamburger (mobile) + Logo + Breadcrumbs */}
                 <div className="flex items-center gap-3 md:gap-4">

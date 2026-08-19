@@ -17,11 +17,11 @@ interface ActionsDropdownProps {
     align?: 'left' | 'right';
 }
 
-const ActionsDropdown: React.FC<ActionsDropdownProps> = ({ 
-    trigger, 
-    actions, 
+const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
+    trigger,
+    actions,
     title = 'ACTIONS',
-    align = 'right' 
+    align = 'right'
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,16 +51,26 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
     return (
         <div className="relative" ref={dropdownRef}>
             {/* Trigger */}
-            <div onClick={() => setIsOpen(!isOpen)}>
+            {/* <div onClick={() => setIsOpen(!isOpen)}>
+                {trigger}
+            </div> */}
+
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                role="button"
+                aria-label="Open actions menu"
+                aria-expanded={isOpen}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setIsOpen(!isOpen)}
+            >
                 {trigger}
             </div>
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div 
-                    className={`absolute top-full mt-2 w-48 bg-white border border-stroke rounded-lg shadow-lg z-50 animate-fade-in ${
-                        align === 'right' ? 'right-0' : 'left-0'
-                    }`}
+                <div
+                    className={`absolute top-full mt-2 w-48 bg-white border border-stroke rounded-lg shadow-lg z-50 animate-fade-in ${align === 'right' ? 'right-0' : 'left-0'
+                        }`}
                 >
                     {/* Header */}
                     {title && (
@@ -77,11 +87,10 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
                             <button
                                 key={action.id}
                                 onClick={() => handleActionClick(action)}
-                                className={`w-full px-4 py-1.5 flex items-center gap-3 text-xs tracking-wide transition-colors cursor-pointer ${
-                                    action.danger 
-                                        ? 'text-red-600 hover:bg-red-50' 
+                                className={`w-full px-4 py-1.5 flex items-center gap-3 text-xs tracking-wide transition-colors cursor-pointer ${action.danger
+                                        ? 'text-red-600 hover:bg-red-50'
                                         : 'text-text-heading hover:bg-neutral-50'
-                                }`}
+                                    }`}
                             >
                                 <span className="flex-shrink-0">{action.icon}</span>
                                 <span className="font-medium">{action.label}</span>

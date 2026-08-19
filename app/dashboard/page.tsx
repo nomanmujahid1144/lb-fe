@@ -18,6 +18,8 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isMounted, setIsMounted] = useState(false);
+    const [receiverErrorCount, setReceiverErrorCount] = useState(0);
+    const [senderErrorCount, setSenderErrorCount] = useState(0);
 
     useEffect(() => { setIsMounted(true); }, []);
 
@@ -47,6 +49,36 @@ export default function DashboardPage() {
         };
 
         fetchStats();
+
+
+        const fetchErrorCounts = async () => {
+            if (user?.type !== 'Admin') return;
+            try {
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                const dateStr = oneMonthAgo.toISOString();
+                const token = getCookie('token');
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:1337';
+
+                const [receiverRes, senderRes] = await Promise.all([
+                    fetch(`${backendUrl}/api/data-receivers?filters[error][$notNull]=true&filters[createdAt][$gte]=${dateStr}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    fetch(`${backendUrl}/api/data-senders?filters[error][$notNull]=true&filters[createdAt][$gte]=${dateStr}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                ]);
+
+                const receiverData = await receiverRes.json();
+                const senderData = await senderRes.json();
+
+                setReceiverErrorCount(receiverData?.meta?.pagination?.total || 0);
+                setSenderErrorCount(senderData?.meta?.pagination?.total || 0);
+            } catch { }
+        };
+
+        fetchErrorCounts();
+
     }, [isMounted, router]);
 
     if (!isMounted || !user) return null;
@@ -89,6 +121,27 @@ export default function DashboardPage() {
             bgColor: 'bg-orange-50',
             iconColor: 'text-orange-500',
         },
+        // Add at the end of statsData array, only for Admin
+        ...(user?.type === 'Admin' ? [
+            {
+                id: 'receiver-errors',
+                label: 'Receiver Errors <30d',
+                value: isLoading ? 0 : receiverErrorCount,
+                percentage: 0,
+                icon: 'thumbsup' as const,
+                bgColor: 'bg-red-50',
+                iconColor: 'text-red-500',
+            },
+            {
+                id: 'sender-errors',
+                label: 'Task Errors <30d',
+                value: isLoading ? 0 : senderErrorCount,
+                percentage: 0,
+                icon: 'thumbsup' as const,
+                bgColor: 'bg-red-50',
+                iconColor: 'text-red-500',
+            },
+        ] : []),
     ];
 
     // Quick actions
