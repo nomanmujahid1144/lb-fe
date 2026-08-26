@@ -218,13 +218,13 @@ export default function LeadsPage() {
 
     if (!isMounted || !user) return null;
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-                <div className="animate-pulse text-neutral-400">Loading leads...</div>
-            </div>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+    //             <div className="animate-pulse text-neutral-400">Loading leads...</div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="min-h-[calc(100vh-4rem)] px-4 md:px-6 lg:px-8 py-6">

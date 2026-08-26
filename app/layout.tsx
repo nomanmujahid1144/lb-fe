@@ -10,6 +10,7 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getCookie } from '@/lib/auth';
 import { usePathname } from 'next/navigation';
+import NavigationLoader from '@/components/layout/NavigationLoader';
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -55,6 +56,7 @@ export default function RootLayout({
               />
             </>
           )}
+          <NavigationLoader />
           <main
             className={`transition-all duration-300 
               ${isMounted && isLoggedIn ? `mt-16 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-60'}` : ''}
