@@ -19,6 +19,8 @@ interface EditRowModalProps {
   userUuid: string;
   /** Active customer filter — scopes the "All with this name" placeholder delete */
   selectedCustomers?: string[];
+  /** ISO-2 codes already in use across companies — suggestions for 'countryList' fields */
+  branchCountryOptions?: string[];
   onClose: () => void;
   onSaved: (updatedRow?: any) => void;
 }
@@ -27,7 +29,7 @@ interface EditRowModalProps {
 export interface FieldDef {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'datetime' | 'url' | 'enum';
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'datetime' | 'url' | 'enum' | 'countryList';
   /** Key into the fetched EnumOptions map — only for type 'enum' */
   enumKey?: keyof EnumOptions;
   nullable?: boolean;   // whether the enum/boolean can be null/blank
@@ -61,6 +63,7 @@ const COMPANY_FIELDS: FieldDef[] = [
   { key: 'business_type',     label: 'Business Type',     type: 'text',     section: 'Company Info' },
   { key: 'country',           label: 'Country',           type: 'text',     section: 'Company Info' },
   { key: 'provincie',         label: 'Province',          type: 'text',     section: 'Company Info' },
+  { key: 'branch_countries',  label: 'Branch Countries',  type: 'countryList', section: 'Company Info' },
   { key: 'city',              label: 'City',              type: 'text',     section: 'Company Info' },
   { key: 'size',              label: 'Size',              type: 'number',   section: 'Company Info' },
   { key: 'size_range',        label: 'Size Range',        type: 'text',     section: 'Company Info' },
@@ -132,6 +135,8 @@ const BLACKLIST_FIELDS: FieldDef[] = [
   { key: 'field_target',   label: 'Field Target',    type: 'text', section: 'Blacklist Entry' },
   { key: 'comparison_type', label: 'Comparison Type', type: 'enum', enumKey: 'comparison_type', nullable: false, section: 'Blacklist Entry' },
   { key: 'value',          label: 'Value',           type: 'text', section: 'Blacklist Entry' },
+  // Scope: "All" for customer-wide, else comma-separated profile names. Read-only.
+  { key: 'profile_scope',  label: 'Profiles',        type: 'text', readOnly: true, noBulkEdit: true, section: 'Blacklist Entry' },
 ];
 
 const UNASSIGNED_PROSPECT_FIELDS: FieldDef[] = [
@@ -215,7 +220,7 @@ function buildSavePayload(tabType: TabType, rowData: any, editValues: Record<str
   switch (tabType) {
     case 'companies': {
       const companyChanges = getChanges(['company_id', 'name', 'description', 'website_url', 'linkedin_url',
-        'industry_company', 'business_type', 'country', 'provincie', 'city', 'size', 'size_range',
+        'industry_company', 'business_type', 'country', 'provincie', 'branch_countries', 'city', 'size', 'size_range',
         'blacklisted', 'scraping_name']);
       return {
         userUuid,
@@ -322,13 +327,124 @@ function toDatetimeLocal(val: any): string {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Branch countries — a " + "-joined list of ISO-2 codes in one column.
+// Mirrors src/utils/branchCountries.ts on the backend; keep the separator in sync.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const BRANCH_COUNTRY_SEPARATOR = ' + ';
+const COUNTRY_CODE_RE = /^[A-Z]{2}$/;
+
+function parseBranchCountries(value?: string | null): string[] {
+  if (!value) return [];
+  return String(value).split(BRANCH_COUNTRY_SEPARATOR).map(c => c.trim()).filter(Boolean);
+}
+
+/** Uppercased ISO-2 code, or null when the input isn't one. */
+function normalizeCountryCode(value: string): string | null {
+  const code = value.trim().toUpperCase();
+  return COUNTRY_CODE_RE.test(code) ? code : null;
+}
+
+/**
+ * Chip editor for a branch-country list.
+ *
+ * Deliberately not a free-text input: the column feeds a filter dropdown, so one typo
+ * ("Nederland", "nl ") would sit there as a country of its own forever. Codes can only
+ * be added by picking a known one or by typing something that parses as ISO-2, and the
+ * value handed up is always the canonical " + "-joined form the backend expects.
+ */
+function BranchCountriesInput({
+  value, onChange, options,
+}: {
+  value: any;
+  onChange: (val: string | null) => void;
+  options: string[];
+}) {
+  const [draft, setDraft] = useState('');
+  const selected = parseBranchCountries(value);
+
+  const commit = (codes: string[]) => {
+    onChange(codes.length > 0 ? codes.join(BRANCH_COUNTRY_SEPARATOR) : null);
+  };
+  const addCode = (raw: string) => {
+    const code = normalizeCountryCode(raw);
+    if (!code) {
+      toast('Use a 2-letter ISO country code, e.g. NL', { icon: 'ℹ️' });
+      return;
+    }
+    if (selected.includes(code)) return;
+    commit([...selected, code]);
+  };
+  const removeCode = (code: string) => commit(selected.filter(c => c !== code));
+
+  const suggestions = options.filter(o => !selected.includes(o));
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap items-center gap-1 px-2 py-1 border border-blue-300 rounded bg-white min-h-[26px]">
+        {selected.map(code => (
+          <span key={code} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#364570] text-white">
+            {code}
+            <button
+              type="button"
+              onClick={() => removeCode(code)}
+              className="hover:text-red-300"
+              title={`Remove ${code}`}
+            >✕</button>
+          </span>
+        ))}
+        <input
+          type="text"
+          value={draft}
+          maxLength={2}
+          placeholder={selected.length === 0 ? 'NL' : ''}
+          onChange={e => setDraft(e.target.value.toUpperCase())}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ',' || e.key === '+') {
+              e.preventDefault();
+              if (draft.trim()) { addCode(draft); setDraft(''); }
+            } else if (e.key === 'Backspace' && draft === '' && selected.length > 0) {
+              removeCode(selected[selected.length - 1]);
+            }
+          }}
+          onBlur={() => { if (draft.trim()) { addCode(draft); setDraft(''); } }}
+          className="flex-1 min-w-[3rem] text-xs outline-none bg-transparent uppercase"
+        />
+        {selected.length > 0 && (
+          <button
+            type="button"
+            onClick={() => commit([])}
+            className="text-[10px] text-gray-400 hover:text-red-500 px-1"
+            title="Clear all"
+          >clear</button>
+        )}
+      </div>
+      {suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {suggestions.map(code => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => addCode(code)}
+              className="px-1.5 py-0.5 rounded text-[10px] bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 transition-colors"
+            >{code}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FieldInput({
-  field, value, onChange, enumOptions
+  field, value, onChange, enumOptions, branchCountryOptions = []
 }: {
   field: FieldDef;
   value: any;
   onChange: (val: any) => void;
   enumOptions: EnumOptions;
+  /** ISO-2 codes already in use — suggestion chips for 'countryList' fields */
+  branchCountryOptions?: string[];
 }) {
   const baseClass = 'w-full px-2 py-1 text-xs border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white';
 
@@ -347,6 +463,16 @@ export function FieldInput({
         <option value="true">Yes</option>
         <option value="false">No</option>
       </select>
+    );
+  }
+
+  if (field.type === 'countryList') {
+    return (
+      <BranchCountriesInput
+        value={value}
+        onChange={onChange}
+        options={branchCountryOptions}
+      />
     );
   }
 
@@ -444,7 +570,7 @@ export function setCachedEnumOptions(opts: EnumOptions): void { cachedEnumOption
 // Main Modal Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function EditRowModal({
-  isOpen, tabType, rowData, userUuid, selectedCustomers, onClose, onSaved
+  isOpen, tabType, rowData, userUuid, selectedCustomers, branchCountryOptions = [], onClose, onSaved
 }: EditRowModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -751,6 +877,7 @@ export default function EditRowModal({
                           value={editValue}
                           onChange={val => setEditValues(prev => ({ ...prev, [field.key]: val }))}
                           enumOptions={enumOptions}
+                          branchCountryOptions={branchCountryOptions}
                         />
                       ) : (
                         <div className={`px-2 py-1 text-xs rounded min-h-[26px] break-words ${field.readOnly ? 'bg-gray-50 text-gray-500' : 'bg-gray-50 text-gray-900'}`}>

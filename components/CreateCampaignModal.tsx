@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
 import { getBackendUrl } from '@/lib/api-config';
 import { getCookie } from '@/lib/auth';
+
+// Message textareas grow with their content. Capped so one long message can't push the rest
+// of the form out of view; past the cap the textarea scrolls itself.
+const MSG_TEXTAREA_MAX_PX = 360;
 
 const CAMPAIGN_TYPES = ['Connector', 'Messenger', 'First Connections', 'Other DMU', 'AI Campaign'] as const;
 const CAMPAIGN_CONTENTS = [
@@ -173,6 +177,22 @@ export default function CreateCampaignModal({
   // by chatters (with AI suggestions) instead of scheduled follow-ups.
   const isAiCampaign = form.campaign_type === 'AI Campaign';
   const visibleMessages = isAiCampaign ? messages.slice(0, 1) : messages;
+
+  const autoGrowMessage = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    // Reset first — without it scrollHeight can only ever grow, never shrink again
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, MSG_TEXTAREA_MAX_PX)}px`;
+  };
+
+  // Covers typing (messages is state), adding/removing a message, switching to AI campaign,
+  // and content loaded by "copy from campaign" — all of which land here as a messages change.
+  // Layout effect so a prefilled message is already at its final size on first paint.
+  useLayoutEffect(() => {
+    for (let idx = 0; idx < visibleMessages.length; idx++) {
+      autoGrowMessage(msgRefs.current[idx]);
+    }
+  }, [messages, isAiCampaign]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -490,8 +510,8 @@ export default function CreateCampaignModal({
                       </div>
                     )}
                     <textarea
-                      ref={el => { msgRefs.current[idx] = el; }}
-                      className={`${inputClass} resize-none`}
+                      ref={el => { msgRefs.current[idx] = el; autoGrowMessage(el); }}
+                      className={`${inputClass} resize-none overflow-y-auto min-h-[4rem]`}
                       rows={3}
                       value={msg.message_content}
                       onFocus={() => setFocusedMsgIdx(idx)}

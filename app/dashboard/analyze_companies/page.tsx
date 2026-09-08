@@ -3,11 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Navigation from '../../../components/layout/Navigation';
-import { getCookie } from '../../../lib/auth';
+import { getCookie, clearAuthCookie } from '../../../lib/auth';
+import { safeLocalStorage } from '../../../lib/storage';
 import { GiBrain } from 'react-icons/gi';
 import { IoIosInformationCircleOutline, IoIosAddCircleOutline, IoIosCloseCircleOutline } from "react-icons/io";
 import { CiCircleCheck, CiWarning } from "react-icons/ci";
 import { getBackendUrl } from '../../../lib/api-config';
+import { estimateAnalysisCost, formatCountdown, formatUsd } from '../../../lib/aiAnalysisCost';
 import toast from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
 
@@ -40,6 +42,13 @@ interface AIPrompt {
 export default function AnalyzeCompaniesPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+
+  const handleLogout = () => {
+    clearAuthCookie();
+    safeLocalStorage.removeItem('user');
+    router.push('/auth/login');
+  };
+
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<number[]>([]);
   const [prompts, setPrompts] = useState<AIPrompt[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<AIPrompt | null>(null);
@@ -72,7 +81,14 @@ export default function AnalyzeCompaniesPage() {
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
   const [deepseekBalance, setDeepseekBalance] = useState<number | null>(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
+  // Which model the *backend* queue will call — the portal has no say in it.
+  const [analysisConfig, setAnalysisConfig] = useState<{ model: string; thinking: string } | null>(null);
+  const [loadingAnalysisConfig, setLoadingAnalysisConfig] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  // Ticks so the peak-rate warning and its countdown stay current while the
+  // summary is open. Starts null to keep the server render and the first client
+  // render identical.
+  const [now, setNow] = useState<Date | null>(null);
 
   // Function to get the authentication token from cookies
   const getCookie = (name: string): string | undefined => {
@@ -81,6 +97,13 @@ export default function AnalyzeCompaniesPage() {
     if (parts.length === 2) return parts.pop()?.split(';').shift();
     return undefined;
   };
+
+  // Keep the peak-rate countdown ticking while step 3 is open.
+  useEffect(() => {
+    setNow(new Date());
+    const interval = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Debug logging for progress bar visibility
   useEffect(() => {
@@ -120,6 +143,40 @@ export default function AnalyzeCompaniesPage() {
     };
 
     fetchDeepSeekBalance();
+  }, [currentStep, analyzing, analysisId]);
+
+  // Fetch the model the analysis queue is configured with, alongside the balance
+  useEffect(() => {
+    if (currentStep !== 3 || analyzing || analysisId) return;
+
+    const controller = new AbortController();
+
+    const fetchAnalysisConfig = async () => {
+      setLoadingAnalysisConfig(true);
+      try {
+        const token = getCookie('token');
+        const response = await fetch(`${getBackendUrl()}/api/all-companies/ai-analysis/config`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          console.error('Failed to fetch AI analysis config:', response.status);
+          setAnalysisConfig(null);
+          return;
+        }
+        setAnalysisConfig(await response.json());
+      } catch (error) {
+        // An aborted request is the effect cleaning up, not a failure.
+        if ((error as Error)?.name === 'AbortError') return;
+        console.error('Error fetching AI analysis config:', error);
+        setAnalysisConfig(null);
+      } finally {
+        if (!controller.signal.aborted) setLoadingAnalysisConfig(false);
+      }
+    };
+
+    fetchAnalysisConfig();
+    return () => controller.abort();
   }, [currentStep, analyzing, analysisId]);
 
   // Initialize user data and get selected company IDs
@@ -640,6 +697,10 @@ export default function AnalyzeCompaniesPage() {
 
   if (user?.type !== 'Admin') return null; // Prevents rendering if redirecting
 
+  // Before the first tick `now` is null; fall back to the off-peak rate so the
+  // server render never claims a peak surcharge it cannot verify yet.
+  const costEstimate = estimateAnalysisCost(selectedCompanyIds.length, now ?? new Date(0));
+
   const steps = [
     { number: 1, title: 'Review Selection', description: 'Confirm selected companies' },
     { number: 2, title: 'Choose Prompt', description: 'Select AI analysis type' },
@@ -647,8 +708,8 @@ export default function AnalyzeCompaniesPage() {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
-      {/* {user && <Navigation user={user} onLogout={() => {}} currentPage="AI Company Analysis" pageIcon={GiBrain} />} */}
+    <div className="min-h-screen bg-gray-50">
+      {user && <Navigation user={user} onLogout={handleLogout} currentPage="AI Company Analysis" pageIcon={GiBrain} />}
       
       <div className="px-6 py-8">
         {/* Header */}
@@ -905,14 +966,29 @@ export default function AnalyzeCompaniesPage() {
                         <span className="text-gray-600">Prompt version:</span>
                         <span className="font-medium">{selectedPrompt?.version}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Model:</span>
+                        <span className="font-medium">
+                          {loadingAnalysisConfig ? (
+                            <ClipLoader size={16} color="#364570" />
+                          ) : analysisConfig ? (
+                            <>
+                              {analysisConfig.model}
+                              {analysisConfig.thinking === 'enabled' && (
+                                <span className="text-amber-600 font-normal"> (thinking on)</span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-gray-400">Unknown</span>
+                          )}
+                        </span>
+                      </div>
                       <div className="border-t border-gray-200 pt-3 mt-3">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Estimated cost:</span>
                           <span className="font-medium text-[#364570]">
-                            {(() => {
-                              const cost = Math.round(selectedCompanyIds.length * 0.0005 * 1000) / 1000;
-                              return cost % 1 === 0 ? `$${cost} USD` : `$${cost.toFixed(3)} USD`;
-                            })()}
+                            {formatUsd(costEstimate.costUsd)} USD
+                            {costEstimate.peak && <span className="text-amber-600 font-normal"> (peak rate)</span>}
                           </span>
                         </div>
                         <div className="flex justify-between mt-2">
@@ -921,7 +997,7 @@ export default function AnalyzeCompaniesPage() {
                             {loadingBalance ? (
                               <ClipLoader size={16} color="#364570" />
                             ) : deepseekBalance !== null ? (
-                              <span className={Number(deepseekBalance) >= (selectedCompanyIds.length * 0.0005) ? 'text-green-600' : 'text-red-600'}>
+                              <span className={Number(deepseekBalance) >= costEstimate.costUsd ? 'text-green-600' : 'text-red-600'}>
                                 ${(Math.round(Number(deepseekBalance) * 100) / 100).toFixed(2)} USD
                               </span>
                             ) : (
@@ -929,6 +1005,30 @@ export default function AnalyzeCompaniesPage() {
                             )}
                           </span>
                         </div>
+                        {costEstimate.peak && costEstimate.offPeakStartsAt && costEstimate.msUntilOffPeak !== null && (
+                          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                            <div className="flex gap-2">
+                              <CiWarning className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                              <div className="text-sm">
+                                <p className="font-medium text-amber-900">
+                                  DeepSeek peak rate — running now costs twice as much
+                                </p>
+                                <p className="text-amber-800 mt-1">
+                                  Off-peak starts at{' '}
+                                  <span className="font-medium">
+                                    {costEstimate.offPeakStartsAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                  </span>{' '}
+                                  ({formatCountdown(costEstimate.msUntilOffPeak)} from now). Starting the
+                                  analysis then costs{' '}
+                                  <span className="font-medium">{formatUsd(costEstimate.offPeakCostUsd)}</span> instead of{' '}
+                                  <span className="font-medium">{formatUsd(costEstimate.costUsd)}</span> — a saving of{' '}
+                                  <span className="font-medium">{formatUsd(costEstimate.savingsUsd)}</span> on{' '}
+                                  {selectedCompanyIds.length} companies.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

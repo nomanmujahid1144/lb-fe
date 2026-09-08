@@ -19,6 +19,10 @@ export default function RichTextEditor({
   minHeight = '120px',
 }: RichTextEditorProps) {
   const editor = useEditor({
+    // Safe to render immediately: this component is always loaded via
+    // next/dynamic with ssr: false, so it never runs during SSR and there's
+    // no hydration mismatch to guard against.
+    immediatelyRender: true,
     extensions: [StarterKit],
     content: value ?? '',
     onUpdate: ({ editor }) => onChange(editor.getHTML()),

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
 import { getBackendUrl } from '@/lib/api-config';
@@ -31,6 +31,8 @@ interface BulkEditModalProps {
   aiPromptName?: string;
   /** Fields available from the selected AI prompt (used as {{ai:field}} tokens) */
   aiFieldTokens?: string[];
+  /** ISO-2 codes already in use across companies — suggestions for 'countryList' fields */
+  branchCountryOptions?: string[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,6 +64,7 @@ export default function BulkEditModal({
   onSaved,
   aiPromptName,
   aiFieldTokens = [],
+  branchCountryOptions = [],
 }: BulkEditModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [enabledFields, setEnabledFields] = useState<Set<string>>(new Set());
@@ -125,7 +128,7 @@ export default function BulkEditModal({
       tokens: aiFieldTokens.map(field => ({ token: `{{ai:${field}}}`, label: field })),
     }] : []),
   ];
-  const fields = getBulkEditableFields(tabType);
+  const fields = useMemo(() => getBulkEditableFields(tabType), [tabType]);
 
   // Group fields by section
   const sections = fields.reduce((acc, field) => {
@@ -280,6 +283,20 @@ export default function BulkEditModal({
       if (!confirmed) return;
     }
 
+    // A list field toggled on but left empty clears the column on every selected record.
+    // Branch Countries is filled by enrichment runs against a CRM export, so a stray
+    // toggle would discard data no manual edit can put back — make it a deliberate act.
+    const clearedListFields = fields.filter(
+      f => f.type === 'countryList' && enabledFields.has(f.key) && !changes[f.key]
+    );
+    if (clearedListFields.length > 0) {
+      const labels = clearedListFields.map(f => f.label).join(', ');
+      const confirmed = window.confirm(
+        `⚠️ ${labels} is empty and will be CLEARED on ${selectedIds.size} record(s).\n\nThis field is filled by enrichment runs and cannot be restored from the portal.\n\nLeave it out of the update by toggling the field off instead. Continue anyway?`
+      );
+      if (!confirmed) return;
+    }
+
     try {
       setIsSaving(true);
       const backendUrl = getBackendUrl();
@@ -314,9 +331,18 @@ export default function BulkEditModal({
       }
 
       const result = await response.json();
-      toast.success(
-        `Successfully updated ${result.updatedCount ?? selectedIds.size} record(s)`
-      );
+      const updated = result.updatedCount ?? selectedIds.size;
+      // Customer-scoped fields (Blacklisted, Scraping Name) only reach companies linked
+      // to your customers, while the global company fields reach the whole selection.
+      // Saying "updated N" alone would hide that gap.
+      if (result.skippedCount > 0) {
+        toast.success(
+          `Updated ${updated} record(s) — ${result.skippedCount} skipped for customer-specific fields (not linked to your customers)`,
+          { duration: 6000 }
+        );
+      } else {
+        toast.success(`Successfully updated ${updated} record(s)`);
+      }
       onSaved(changes);
       onClose();
     } catch (error) {
@@ -325,7 +351,7 @@ export default function BulkEditModal({
     } finally {
       setIsSaving(false);
     }
-  }, [enabledFields, editValues, selectedIds, tabType, userUuid, onSaved, onClose]);
+  }, [enabledFields, editValues, fields, selectedIds, tabType, userUuid, onSaved, onClose]);
 
   if (!isOpen) return null;
 
@@ -434,6 +460,7 @@ export default function BulkEditModal({
                                   }))
                                 }
                                 enumOptions={enumOptions}
+                                branchCountryOptions={branchCountryOptions}
                               />
                               {field.key === 'persona_category' && enumOptions.persona_category.length > 0 && (() => {
                                 const typed = (editValues[field.key] ?? '').toLowerCase();
