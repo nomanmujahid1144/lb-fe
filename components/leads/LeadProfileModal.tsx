@@ -12,6 +12,7 @@ import SentimentDropdown from './SentimentDropdown';
 import EditNoteModal from './EditNoteModal';
 import DeleteNoteModal from './DeleteNoteModal';
 import { toast } from '@/lib/toast';
+import { formatDate } from '@/utils/formatters';
 
 interface LeadProfileModalProps {
     isOpen: boolean;
@@ -96,15 +97,6 @@ const initialMockTimelineData: TimelineItem[] = [
         content: 'Lead seems interested in B2B lead generation. Good fit for our enterprise solution.'
     }
 ];
-
-
-// Add above the component (or reuse — same function)
-const formatDate = (date: string | undefined): string => {
-    if (!date || date === 'N/A') return 'N/A';
-    const d = new Date(date + 'T00:00:00');
-    if (isNaN(d.getTime())) return date;
-    return `${d.getDate()} ${d.toLocaleString('en-US', { month: 'short' })} ${d.getFullYear()}`;
-};
 
 const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
     isOpen,

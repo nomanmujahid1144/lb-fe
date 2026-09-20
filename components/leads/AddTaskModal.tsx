@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Modal from '../Modal';
 import { AtRateIcon, CalendarIcon } from '../Icons';
 import { toast } from '@/lib/toast';
+import { formatDisplayDate } from '@/utils/formatters';
 
 interface AddTaskModalProps {
     isOpen: boolean;
@@ -48,12 +49,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSubmit }
     const handleSuggestionSelect = (option: string) => {
         setAssignTo(option);
         setShowSuggestions(false);
-    };
-
-    const formatDisplayDate = (value: string): string => {
-        if (!value) return '';
-        const date = new Date(value + 'T00:00:00');
-        return `${date.getDate()}-${date.toLocaleString('en-US', { month: 'short' })}-${date.getFullYear()}`;
     };
 
     const handleSubmit = () => {

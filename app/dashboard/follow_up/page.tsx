@@ -304,6 +304,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { ClipLoader } from 'react-spinners';
 import LeadsTopBar from '@/components/leads/LeadsTopBar';
 import ListView from '@/components/leads/ListView';
 import AddLeadPhaseModal from '@/components/leads/AddLeadPhaseModal';
@@ -314,6 +315,7 @@ import { safeLocalStorage } from '@/lib/storage';
 import { leadsService } from '@/services/leads.service';
 import { getEmptyColumns, mergeProspectsIntoColumns } from '@/utils/leadsTransformer';
 import type { KanbanColumn } from '@/types/leads/leads.types';
+import NavigationLoader from '@/components/layout/NavigationLoader';
 
 interface User {
     id: number;
@@ -338,9 +340,7 @@ interface FilterState {
 const KanbanBoard = dynamic(() => import('@/components/leads/KanbanBoard'), {
     ssr: false,
     loading: () => (
-        <div className="flex items-center justify-center h-64">
-            <div className="animate-pulse text-neutral-400">Loading...</div>
-        </div>
+        <NavigationLoader />
     ),
 });
 
@@ -357,10 +357,29 @@ const DEFAULT_FILTERS: FilterState = {
 
 const BATCH_SIZE = 30;
 
+// Loading skeleton card shown while leads are streaming in
+const LoadingSkeleton = () => (
+    <div className="animate-pulse bg-card-bg rounded-lg p-4 space-y-3">
+        <div className="h-3 bg-neutral-200 rounded w-3/4" />
+        <div className="h-3 bg-neutral-200 rounded w-1/2" />
+        <div className="h-3 bg-neutral-200 rounded w-2/3" />
+        <div className="h-6 bg-neutral-200 rounded w-1/3 mt-2" />
+    </div>
+);
+
+// Loading overlay shown on each empty column while fetching
+const ColumnLoadingIndicator = () => (
+    <div className="flex flex-col items-center justify-center py-8 gap-3">
+        <ClipLoader size={24} color="#47577d" />
+        <p className="text-xs text-neutral-400">Loading leads...</p>
+    </div>
+);
+
 export default function LeadsPage() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const isFetchingRef = useRef(false);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -407,6 +426,7 @@ export default function LeadsPage() {
     const fetchLeadsInBatches = async (userUuid: string, token: string) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
+        setIsLoading(true);
 
         // Reset to empty default columns before fetching
         setColumns(getEmptyColumns());
@@ -422,6 +442,8 @@ export default function LeadsPage() {
                         profiles: [],
                         campaigns: [],
                         prospectStatuses: [
+                            'Check',
+                            'Checked',
                             'Connected',
                             'Awaiting reply',
                             'First follow-up sent',
@@ -443,16 +465,9 @@ export default function LeadsPage() {
 
                 const batch = data.data || [];
 
-                // Temporary debug — remove after checking
-                if (page === 1) {
-                    console.log('Full API response:', JSON.stringify(data, null, 2));
-                    console.log('Total count:', data.meta?.total);
-                    console.log('Unique prospect_status values:', [...new Set(batch.map((p: any) => p.prospect_status))]);
-                    console.log('Unique lead_phase values:', [...new Set(batch.map((p: any) => p.lead_phase))]);
-                    console.log('Sample prospect:', JSON.stringify(batch[0], null, 2));
-                }
-
                 if (batch.length > 0) {
+                    // After first batch arrives — hide loading state
+                    if (page === 1) setIsLoading(false);
                     // Merge batch into existing columns progressively
                     setColumns(prev => mergeProspectsIntoColumns(prev, batch));
                 }
@@ -467,6 +482,7 @@ export default function LeadsPage() {
             }
         }
 
+        setIsLoading(false);
         isFetchingRef.current = false;
     };
 
@@ -552,6 +568,45 @@ export default function LeadsPage() {
     };
 
     if (!isMounted || !user) return null;
+
+    // Full page loading state — shown before first batch arrives
+    if (isLoading) {
+        return (
+            <div className="min-h-[calc(100vh-4rem)] px-4 md:px-6 lg:px-8 py-6">
+                <LeadsTopBar
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    selectedSort={selectedSort}
+                    onSortChange={setSelectedSort}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    onFilterChange={handleFilterChange}
+                    activeLeadPhases={activeFilters.leadPhases}
+                    onLeadPhaseToggle={handleLeadPhaseToggle}
+                    onLeadPhaseReset={handleLeadPhaseReset}
+                    activeFilters={activeFilters}
+                />
+                {/* Loading state — columns with spinner instead of "No leads" */}
+                <div className="overflow-x-auto pb-4">
+                    <div className="inline-flex gap-1 min-w-full">
+                        {getEmptyColumns().map((col) => (
+                            <div key={col.id} className="w-80 shrink-0 p-1">
+                                <div className="flex items-center gap-2 pb-4">
+                                    <span className={`px-2 py-1 ${col.color} text-neutral-700 text-xs font-semibold rounded-full`}>
+                                        0
+                                    </span>
+                                    <h3 className="text-md font-medium text-text-heading">{col.title}</h3>
+                                </div>
+                                <div className="min-h-[300px] rounded-lg bg-card-bg">
+                                    <ColumnLoadingIndicator />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[calc(100vh-4rem)] px-4 md:px-6 lg:px-8 py-6">

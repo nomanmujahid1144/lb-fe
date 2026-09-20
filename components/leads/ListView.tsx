@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { DotsVerticleViewMoreIcon, LinkedinBoldIcon, PencilEditIcon } from '../Icons';
 import AddLeadPhaseButton from './AddLeadPhaseButton';
+import { formatDate } from '@/utils/formatters';
 
 interface Card {
     id: string;
@@ -89,13 +90,6 @@ const getSentimentColor = (sentiment: string) => {
     if (sentiment.startsWith('NEG')) return 'bg-sentiment-negative text-sentiment-negative-dark';
     if (sentiment.includes('DMU')) return 'bg-sentiment-dmu text-sentiment-dmu-dark';
     return 'bg-sentiment-neutral text-sentiment-neutral-dark';
-};
-
-const formatDate = (date: string | undefined): string => {
-    if (!date || date === 'N/A') return 'N/A';
-    const d = new Date(date + 'T00:00:00');
-    if (isNaN(d.getTime())) return date;
-    return `${d.getDate()} ${d.toLocaleString('en-US', { month: 'short' })} ${d.getFullYear()}`;
 };
 
 const isDateInRange = (dateStr: string | undefined, fromDate: string, toDate: string): boolean => {

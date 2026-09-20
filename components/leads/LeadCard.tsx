@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { CardCounterIcon, LinkedinIcon, PencilEditIcon, SidebarLeftIcon, TimeLineListIcon, ShareExportIcon } from '../Icons';
 import Image from 'next/image';
 import MoveToDropdown from './MoveToDropdown';
+import { formatDate } from '@/utils/formatters';
 
 interface LeadCardProps {
     id: string;
@@ -25,13 +26,6 @@ interface LeadCardProps {
     onLeadClick?: (lead: any) => void;
     phaseColor?: string;
 }
-
-const formatDate = (date: string): string => {
-    if (!date || date === 'N/A') return 'N/A';
-    const d = new Date(date + 'T00:00:00');
-    if (isNaN(d.getTime())) return date;
-    return `${d.getDate()} ${d.toLocaleString('en-US', { month: 'short' })} ${d.getFullYear()}`;
-};
 
 const LeadCard: React.FC<LeadCardProps> = ({
     id,
@@ -77,7 +71,7 @@ const LeadCard: React.FC<LeadCardProps> = ({
 
     const handleNoteSave = () => {
         setShortNote(noteInput);
-        try { localStorage.setItem(`nova-short-note-${id}`, noteInput); } catch {}
+        try { localStorage.setItem(`nova-short-note-${id}`, noteInput); } catch { }
         setIsEditingNote(false);
     };
 
