@@ -442,14 +442,17 @@ export default function LeadsPage() {
                         profiles: [],
                         campaigns: [],
                         prospectStatuses: [
+                            // 'Check',
+                            // 'Checked',
+                            // 'Connected',
+                            // 'Awaiting reply',
+                            // 'First follow-up sent',
+                            // 'Second follow-up sent',
+                            // 'Third follow-up sent',
+                            // 'Fourth follow-up sent',
                             'Check',
                             'Checked',
-                            'Connected',
                             'Awaiting reply',
-                            'First follow-up sent',
-                            'Second follow-up sent',
-                            'Third follow-up sent',
-                            'Fourth follow-up sent',
                         ],
                         leadPhases: [],
                         sentiments: [],
@@ -464,6 +467,34 @@ export default function LeadsPage() {
                 });
 
                 const batch = data.data || [];
+
+                if (page === 1 && batch.length > 0) {
+                    console.log('=== LEAD MAPPING DEBUG ===');
+                    console.log('Total in first batch:', batch.length);
+
+                    // Show distribution
+                    const distribution: Record<string, number> = {};
+                    batch.forEach((p: any) => {
+                        const phase = p.lead_phase || `[status: ${p.prospect_status}]`;
+                        distribution[phase] = (distribution[phase] || 0) + 1;
+                    });
+                    console.log('Distribution:', distribution);
+
+                    // Show 3 sample leads
+                    console.log('Sample lead 1:', {
+                        name: `${batch[0].first_name} ${batch[0].last_name}`,
+                        prospect_status: batch[0].prospect_status,
+                        lead_phase: batch[0].lead_phase,
+                        chatter_note_count: batch[0].chatter_note?.length || 0,
+                    });
+                    console.log('Sample lead 2:', {
+                        name: `${batch[1]?.first_name} ${batch[1]?.last_name}`,
+                        prospect_status: batch[1]?.prospect_status,
+                        lead_phase: batch[1]?.lead_phase,
+                        chatter_note_count: batch[1]?.chatter_note?.length || 0,
+                    });
+                    console.log('=== END DEBUG ===');
+                }
 
                 if (batch.length > 0) {
                     // After first batch arrives — hide loading state
