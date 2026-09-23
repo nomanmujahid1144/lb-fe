@@ -1,3 +1,15 @@
+const AUTH_COOKIE_NAME = 'token';
+
+/**
+ * Clears the auth cookie. Attributes must mirror the ones used when the cookie is set in
+ * LoginForm — a cookie only gets overwritten when name, path and SameSite/Secure match.
+ */
+export function clearAuthCookie(): void {
+    if (typeof document === 'undefined') return;
+    const isSecure = window.location.protocol === 'https:';
+    document.cookie = `${AUTH_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+}
+
 export function getCookie(name: string): string | null {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
