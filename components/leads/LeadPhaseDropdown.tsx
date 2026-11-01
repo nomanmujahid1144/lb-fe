@@ -55,7 +55,7 @@ const LeadPhaseDropdown: React.FC<LeadPhaseDropdownProps> = ({
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="px-3 py-1.5 border border-primary-button/20 bg-primary-button/20 text-primary-button/50 text-xs font-medium rounded-full flex items-center gap-2 hover:bg-blue-200 transition-colors cursor-pointer"
+                className="px-3 py-1 border border-primary-button/20 bg-primary-button/20 text-primary-button/50 text-xs font-medium rounded-full flex items-center gap-2 hover:bg-blue-200 transition-colors cursor-pointer"
             >
                 Leadphase: <span className='text-primary-button'>{currentPhase}</span>
                 <ArrowDownIcon size={9} />

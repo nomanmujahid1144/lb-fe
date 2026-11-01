@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { PlusIcon } from '../Icons';
 
 interface AddLeadPhaseButtonProps {
     onClick: () => void;
@@ -9,22 +8,21 @@ interface AddLeadPhaseButtonProps {
 }
 
 const AddLeadPhaseButton: React.FC<AddLeadPhaseButtonProps> = ({ onClick, variant = 'default' }) => {
+    if (variant === 'light') return null;
+
     return (
-        <button
-            onClick={onClick}
-            className={`h-6 w-6 shrink-0 flex items-center justify-center border-stroke rounded-full hover:bg-primary/5 transition-all group
-                ${
-                variant === 'light' 
-                    ? 'border border-dashed' 
-                    : 'border-2 border-dashed'
-            }`}
-            aria-label="Add new lead phase"
-        >
-            <PlusIcon 
-                size={12} 
-                className="text-stroke stroke-2"
-            />
-        </button>
+        <div className="w-auto h-fit shrink-0 p-1.5 rounded-xl bg-phase-blue/40">
+            <button
+                onClick={onClick}
+                className=" h-fit px-10 py-2 flex items-center justify-center border border-dashed border-gray-600 rounded-xl transition-colors cursor-pointer"
+                aria-label="Add new lead phase"
+            >
+                <span className="text-sm font-normal text-icon-linkedin flex items-center gap-1.5">
+                    <span className="text-lg">+</span>
+                    Add lead phase
+                </span>
+            </button>
+        </div>
     );
 };
 

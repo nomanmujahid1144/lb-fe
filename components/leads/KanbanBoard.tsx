@@ -66,6 +66,7 @@ interface KanbanBoardProps {
   onMoveColumnRight: (columnId: string) => void;
   collapsedColumns: Record<string, boolean>;
   onToggleCollapse: (columnId: string, collapsed: boolean) => void;
+  isCompact?: boolean;
 }
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
@@ -81,7 +82,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onMoveColumnLeft,
   onMoveColumnRight,
   collapsedColumns,
-  onToggleCollapse
+  onToggleCollapse,
+  isCompact = false,
 }) => {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [overCardId, setOverCardId] = useState<string | null>(null);
@@ -355,6 +357,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   isCollapsed={collapsedColumns[column.id] ?? false}
                   onToggleCollapse={onToggleCollapse}
                   overCardId={overCardId}
+                  isCompact={isCompact}
                 />
               </SortableContext>
             ))}

@@ -124,15 +124,15 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
       {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden "
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white flex flex-col z-50 transition-all duration-300 
-          ${isCollapsed ? 'w-16' : 'w-60'}
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] border-r border-gray-50 bg-white flex flex-col z-50 transition-all duration-300 
+          ${isCollapsed ? 'w-16' : 'w-52'}
           lg:translate-x-0
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}

@@ -316,6 +316,7 @@ import { leadsService } from '@/services/leads.service';
 import { getEmptyColumns, mergeProspectsIntoColumns } from '@/utils/leadsTransformer';
 import type { KanbanColumn } from '@/types/leads/leads.types';
 import NavigationLoader from '@/components/layout/NavigationLoader';
+import MyTasksBar from '@/components/leads/MyTasksBar';
 
 interface User {
     id: number;
@@ -386,6 +387,7 @@ export default function LeadsPage() {
     const [selectedSort, setSelectedSort] = useState('date-desc');
     const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [isCompact, setIsCompact] = useState(false);
 
     // Start with empty default columns — board renders immediately
     const [columns, setColumns] = useState<any[]>(getEmptyColumns());
@@ -393,11 +395,21 @@ export default function LeadsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLead, setSelectedLead] = useState<any>(null);
     const [collapsedColumns, setCollapsedColumns] = useState<Record<string, boolean>>({});
+    const [taskTab, setTaskTab] = useState<'all' | 'today' | 'overdue'>('all');
 
     useEffect(() => {
         try {
             const saved = localStorage.getItem('leadblocks-collapsed-columns');
-            if (saved) setCollapsedColumns(JSON.parse(saved));
+            if (saved) {
+                setCollapsedColumns(JSON.parse(saved));
+            } else {
+                // Default: vertical columns start collapsed, horizontal ones start expanded
+                const defaultCollapsed: Record<string, boolean> = {};
+                getEmptyColumns().forEach(col => {
+                    if (col.isVertical) defaultCollapsed[col.id] = true;
+                });
+                setCollapsedColumns(defaultCollapsed);
+            }
         } catch { }
     }, []);
 
@@ -600,6 +612,24 @@ export default function LeadsPage() {
 
     if (!isMounted || !user) return null;
 
+    // Count leads with internal tasks
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const allLeads = columns.flatMap(col => col.cards);
+    const allTaskCount = allLeads.filter(card => card.internalDate && card.internalDate !== 'N/A').length;
+    const todayTaskCount = allLeads.filter(card => {
+        if (!card.internalDate || card.internalDate === 'N/A') return false;
+        const d = new Date(card.internalDate);
+        return d >= today && d < tomorrow;
+    }).length;
+    const overdueTaskCount = allLeads.filter(card => {
+        if (!card.internalDate || card.internalDate === 'N/A') return false;
+        return new Date(card.internalDate) < today;
+    }).length;
+
     // Full page loading state — shown before first batch arrives
     if (isLoading) {
         return (
@@ -653,6 +683,14 @@ export default function LeadsPage() {
                 onLeadPhaseToggle={handleLeadPhaseToggle}
                 onLeadPhaseReset={handleLeadPhaseReset}
                 activeFilters={activeFilters}
+                isCompact={isCompact}
+                onCompactToggle={() => setIsCompact(prev => !prev)}
+            />
+
+            <MyTasksBar
+                counts={{ all: allTaskCount, today: todayTaskCount, overdue: overdueTaskCount }}
+                activeTab={taskTab}
+                onTabChange={setTaskTab}
             />
 
             {viewMode === 'grid' ? (
@@ -670,6 +708,7 @@ export default function LeadsPage() {
                     onMoveColumnRight={handleMoveColumnRight}
                     collapsedColumns={collapsedColumns}
                     onToggleCollapse={handleToggleCollapse}
+                    isCompact={isCompact}
                 />
             ) : (
                 <ListView
@@ -679,6 +718,7 @@ export default function LeadsPage() {
                     activeFilters={activeFilters}
                     onAddPhaseClick={() => setIsModalOpen(true)}
                     onLeadClick={handleLeadClick}
+                    isCompact={isCompact}
                 />
             )}
 

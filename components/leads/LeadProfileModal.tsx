@@ -318,27 +318,48 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
 
     return (
         <>
-            <Modal
+            {/* <Modal
                 isOpen={isOpen}
                 onClose={onClose}
                 maxWidth="3xl"
                 showCloseButton={true}
                 zIndex={50}
+            > */}
+            {/* Backdrop */}
+            <div
+                className={`fixed inset-0 bg-black/20 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={onClose}
+            />
+
+            {/* Slide panel */}
+            <div
+                className={`fixed top-0 right-0 h-full w-11/12 p-2 md:p-4 sm:w-8/12 md:w-6/12 bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
+                {/* Close Button */}
+                <div className="flex justify-end ">
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-700"
+                        aria-label="Close"
+                    >
+                        <CancelIcon size={16} />
+                    </button>
+                </div>
+
                 {/* Lead Header */}
-                <div className="mb-6 -mt-4 border border-stroke rounded-xl p-3 md:p-5">
+                <div className="mb-4 border border-stroke rounded-xl p-3 md:p-3">
                     {/* Avatar + Name + Title + Company */}
                     <div className="flex flex-col sm:flex-row items-start gap-4 mb-4">
                         {/* Avatar */}
-                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-primary-button/10 border-2 border-stroke/50 flex items-center justify-center flex-shrink-0">
-                            <span className="text-lg md:text-xl font-semibold text-primary-button">
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-primary-button/10 border border-stroke/50 flex items-center justify-center flex-shrink-0">
+                            <span className="text-md md:text-lg font-semibold text-primary-button">
                                 {getInitials(lead.name)}
                             </span>
                         </div>
 
                         {/* Name, Title, Company */}
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-lg md:text-xl font-semibold text-text-heading break-words">{lead.name}</h3>
                                 <a
                                     href={lead.linkedinUrl || '#'}
@@ -353,7 +374,7 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                                 {lead.title} at <span className="font-medium">{lead.company}</span>
                             </p>
                             {/* Contact Info */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs md:text-sm text-neutral-600 mt-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs md:text-sm text-neutral-600 mt-1">
                                 {lead.phone && (
                                     <div className="flex items-center gap-2">
                                         <PhoneIcon size={14} />
@@ -373,7 +394,7 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                     {/* Dates */}
                     <div className="flex flex-row sm:items-center gap-3 sm:gap-6 text-xs text-neutral-600 mb-4">
                         {lead.chatterDate && (
-                            <div className="flex items-center gap-1 border border-stroke py-1.5 px-2.5 rounded-full w-fit">
+                            <div className="flex items-center gap-1 border border-stroke py-1.5 px-2.5 rounded-lg w-fit">
                                 <TickCorrectBoxIcon size={12} className="hidden sm:inline-block" />
                                 <span>Chatter: {formatDate(lead.chatterDate)}</span>
                             </div>
@@ -389,7 +410,7 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                     <hr className='w-full my-4 border-stroke' />
 
                     {/* Dropdowns - Lead Phase, Sentiment, CRM */}
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                         {/* Lead Phase Dropdown - Takes full width on mobile */}
                         <div className="w-full md:w-auto">
                             <LeadPhaseDropdown
@@ -413,21 +434,21 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                         </div>
 
                         {/* CRM Status - Shares row with Sentiment on mobile */}
-                        <span className="px-3 py-1.5 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full cursor-pointer whitespace-nowrap">
+                        <span className="px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full cursor-pointer whitespace-nowrap">
                             CRM: {currentCrmStatus}
                         </span>
                     </div>
                 </div>
 
                 {/* Activity Timeline */}
-                <div className="border-t border-stroke pt-4 md:pt-6">
+                <div className="border-t border-stroke pt-4 md:pt-6 flex flex-col flex-1 min-h-0">
                     <div className="flex items-center justify-between mb-4 px-1">
                         <h4 className="text-xs md:text-sm font-semibold text-text/80 uppercase tracking-wide">
                             Activity Timeline
                         </h4>
                         <ActionsDropdown
                             trigger={
-                                <button className="w-8 h-8 flex items-center justify-center rounded-full border border-stroke bg-neutral-50 hover:bg-neutral-100 cursor-pointer transition-colors">
+                                <button className="w-7 h-7 flex items-center justify-center rounded-full border border-stroke bg-neutral-50 hover:bg-neutral-100 cursor-pointer transition-colors">
                                     <PlusIcon size={14} />
                                 </button>
                             }
@@ -462,12 +483,12 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex items-center gap-2 mb-4 md:mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                    <div className="flex items-center gap-2 mb-4 md:mb-6 pb-2 -mx-1 px-1 flex-wrap">
                         {tabs.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab
+                                className={`px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm font-medium rounded-full whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab
                                     ? 'bg-icon-linkedin text-white'
                                     : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                                     }`}
@@ -478,7 +499,7 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                     </div>
 
                     {/* Timeline Content */}
-                    <div className="space-y-4 md:space-y-6 pr-1 md:pr-2 max-h-[400px] md:max-h-[500px] overflow-y-auto">
+                    <div className="space-y-4 md:space-y-6 pr-1 md:pr-2 overflow-y-auto flex-1 min-h-0">
                         {filteredTimeline.length > 0 ? (
                             filteredTimeline.map((item, index) => (
                                 <div key={item.id} className="flex gap-3 md:gap-4 relative">
@@ -687,7 +708,8 @@ const LeadProfileModal: React.FC<LeadProfileModalProps> = ({
                         )}
                     </div>
                 </div>
-            </Modal>
+                {/* </Modal> */}
+            </div>
 
             {/* Add Note Modal */}
             <AddNoteModal

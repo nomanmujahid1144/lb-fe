@@ -29,6 +29,8 @@ interface LeadsTopBarProps {
     onLeadPhaseToggle: (phaseId: string) => void;
     onLeadPhaseReset: () => void;
     activeFilters: FilterState;
+    isCompact?: boolean;
+    onCompactToggle?: () => void;
 }
 
 const EMPTY_FILTERS: FilterState = {
@@ -54,6 +56,8 @@ const LeadsTopBar: React.FC<LeadsTopBarProps> = ({
     onLeadPhaseToggle,
     onLeadPhaseReset,
     activeFilters,
+    isCompact = false,
+    onCompactToggle,
 }) => {
     const hasActiveFilters =
         activeLeadPhases.length > 0 ||
@@ -192,6 +196,15 @@ const LeadsTopBar: React.FC<LeadsTopBarProps> = ({
                 {/* View Toggle */}
                 {onViewModeChange && (
                     <div className="flex items-center gap-3">
+                        {/* Compact/Comfortable Button */}
+                        {onCompactToggle && (
+                            <button
+                                onClick={onCompactToggle}
+                                className="px-4 py-2 text-sm cursor-pointer text-text-breadcrumb border border-stroke rounded-lg hover:bg-neutral-50 transition-colors"
+                            >
+                                {isCompact ? 'Comfortable' : 'Compact'}
+                            </button>
+                        )}
                         <div className="flex items-center border border-stroke rounded-lg">
                             <button
                                 onClick={() => onViewModeChange('list')}

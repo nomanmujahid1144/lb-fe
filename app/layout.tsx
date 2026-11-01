@@ -58,8 +58,8 @@ export default function RootLayout({
           )}
           <NavigationLoader />
           <main
-            className={`transition-all duration-300 
-              ${isMounted && isLoggedIn ? `mt-16 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-60'}` : ''}
+            className={`transition-all duration-300 bg-gray-50/50 
+              ${isMounted && isLoggedIn ? `mt-16 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-52'}` : ''}
             `}
           >
             {children}

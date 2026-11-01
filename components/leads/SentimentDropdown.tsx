@@ -90,7 +90,7 @@ const SentimentDropdown: React.FC<SentimentDropdownProps> = ({
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`px-3 py-1.5 border ${colors.border} ${colors.bg} ${colors.text} text-xs font-medium rounded-full flex items-center gap-2 ${colors.hover} transition-colors cursor-pointer`}
+                className={`px-3 py-1 border ${colors.border} ${colors.bg} ${colors.text} text-xs font-medium rounded-full flex items-center gap-2 ${colors.hover} transition-colors cursor-pointer`}
             >
                 Sentiment: <span className={colors.textDark}>{currentSentiment}</span>
                 <ArrowDownIcon size={9} />

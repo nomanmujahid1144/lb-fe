@@ -45,6 +45,7 @@ interface ListViewProps {
     activeFilters: FilterState;
     onAddPhaseClick: () => void;
     onLeadClick: (lead: any) => void;
+    isCompact?: boolean;
 }
 
 interface ColumnDef {
@@ -115,13 +116,121 @@ const LAST_RECEIVED_MESSAGES: Record<string, string> = {
     '5': 'Thank you for the message. Could you share more details about your service?',
 };
 
+const PhaseAccordion = ({
+    columns,
+    sortedCards,
+    orderedCols,
+    gridTemplate,
+    onLeadClick,
+    renderCell,
+    openPhases,
+    togglePhase,
+}: {
+    columns: Column[];
+    sortedCards: Card[];
+    orderedCols: ColumnDef[];
+    gridTemplate: string;
+    onLeadClick: (lead: any) => void;
+    renderCell: (col: ColumnDef, card: Card) => React.ReactNode;
+    openPhases: Record<string, boolean>;
+    togglePhase: (colId: string) => void;
+}) => {
+    const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
+
+    const PAGE_SIZE = 10;
+
+    const getVisible = (colId: string) => visibleCounts[colId] ?? PAGE_SIZE;
+
+    const showMore = (colId: string, total: number) => {
+        setVisibleCounts(prev => ({
+            ...prev,
+            [colId]: Math.min((prev[colId] ?? PAGE_SIZE) + PAGE_SIZE, total)
+        }));
+    };
+
+    return (
+        <div>
+            {columns.map(column => {
+                const phaseCards = sortedCards.filter(card => card.phase === column.title);
+                const isOpen = openPhases[column.id] ?? false;
+                const visibleCount = getVisible(column.id);
+                const visibleCards = phaseCards.slice(0, visibleCount);
+                const remaining = phaseCards.length - visibleCount;
+                const withoutUpdate = phaseCards.filter(card => !card.internalDate || card.internalDate === 'N/A').length;
+                const hintText = withoutUpdate === 0
+                    ? 'All up to date'
+                    : `${withoutUpdate} without an update yet`;
+
+                return (
+                    <div key={column.id}>
+                        {/* Phase Header */}
+                        <div
+                            onClick={() => togglePhase(column.id)}
+                            className="flex items-center gap-3 px-6 py-3 bg-neutral-50 border-b border-stroke cursor-pointer hover:bg-neutral-100 transition-colors select-none"
+                        >
+                            <svg
+                                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                                className={`flex-shrink-0 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-90' : 'rotate-0'}`}
+                            >
+                                <path d="M5 3L9 7L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span className="text-sm font-semibold text-text-heading">{column.title}</span>
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full text-neutral-700 ${column.color}`}>
+                                {phaseCards.length}
+                            </span>
+                            <span className="text-xs text-neutral-400">{hintText}</span>
+                        </div>
+
+                        {/* Phase Rows */}
+                        {isOpen && (
+                            <div className="divide-y divide-stroke">
+                                {phaseCards.length > 0 ? (
+                                    <>
+                                        {visibleCards.map(card => (
+                                            <div
+                                                key={card.id}
+                                                onClick={() => onLeadClick(card)}
+                                                className="grid gap-4 px-6 py-4 bg-white transition-colors cursor-pointer items-center"
+                                                style={{ gridTemplateColumns: gridTemplate }}
+                                            >
+                                                {orderedCols.map(col => (
+                                                    <div key={col.id} className="flex items-center min-w-0">
+                                                        {renderCell(col, card)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                        {remaining > 0 && (
+                                            <div className="py-3 bg-white">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); showMore(column.id, phaseCards.length); }}
+                                                    className="text-sm text-text-heading cursor-pointer font-semibold text-center  w-full transition-colors"
+                                                >
+                                                    Show {Math.min(remaining, PAGE_SIZE)} more ({remaining} left)
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="px-6 py-4 text-sm text-neutral-400">No leads in this phase</div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 const ListView: React.FC<ListViewProps> = ({
     columns,
     searchQuery,
     selectedSort,
     activeFilters,
     onAddPhaseClick,
-    onLeadClick
+    onLeadClick,
+    isCompact = false,
 }) => {
     const [colOrder, setColOrder] = useState<string[]>(() => {
         try {
@@ -136,6 +245,11 @@ const ListView: React.FC<ListViewProps> = ({
     const [dragOverColId, setDragOverColId] = useState<string | null>(null);
     const [animatingColId, setAnimatingColId] = useState<string | null>(null);
     const dragColRef = useRef<string | null>(null);
+    const [openPhases, setOpenPhases] = useState<Record<string, boolean>>({});
+
+    const togglePhase = (colId: string) => {
+        setOpenPhases(prev => ({ ...prev, [colId]: !prev[colId] }));
+    };
 
     const orderedCols = colOrder
         .map(id => DEFAULT_COLUMNS.find(c => c.id === id))
@@ -247,7 +361,9 @@ const ListView: React.FC<ListViewProps> = ({
                                     <LinkedinBoldIcon size={12} className="flex-shrink-0 text-calendar-picker" />
                                 </a>
                             </div>
-                            <p className="text-xs text-neutral-500 truncate">{card.title}</p>
+                            {!isCompact && (
+                                <p className="text-xs text-neutral-500 truncate">{card.title}</p>
+                            )}
                         </div>
                     </div>
                 );
@@ -351,15 +467,16 @@ const ListView: React.FC<ListViewProps> = ({
 
     const gridTemplate = orderedCols.map(c => `${c.span}fr`).join(' ');
 
+
     return (
         <div className="overflow-hidden">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
-                <div style={{ minWidth: '900px' }}>
+                <div style={{ minWidth: '900px' }} className='border border-stroke rounded-xl overflow-hidden'>
 
                     {/* Table Header */}
                     <div
-                        className="grid items-center gap-4 px-6 py-3 bg-neutral-50 border-b border-stroke text-xs font-semibold text-neutral-600 uppercase select-none transition-all duration-300"
+                        className="grid items-center gap-4 px-6 py-3 bg-white border-b border-stroke text-xs font-semibold text-neutral-600 uppercase select-none"
                         style={{ gridTemplateColumns: gridTemplate }}
                     >
                         {orderedCols.map(col => (
@@ -397,17 +514,17 @@ const ListView: React.FC<ListViewProps> = ({
                     </div>
 
                     {/* Table Body */}
-                    <div className="divide-y divide-stroke">
+                    {/* <div className="divide-y divide-stroke">
                         {sortedCards.length > 0 ? (
                             sortedCards.map((card) => (
                                 <div
                                     key={card.id}
                                     onClick={() => onLeadClick(card)}
-                                    className="grid gap-4 px-6 py-4 hover:bg-neutral-50 transition-all duration-300 cursor-pointer items-center"
+                                    className="grid gap-4 px-6 py-4 hover:bg-neutral-50 transition-colors cursor-pointer items-center"
                                     style={{ gridTemplateColumns: gridTemplate }}
                                 >
                                     {orderedCols.map(col => (
-                                        <div key={col.id} className="flex items-center min-w-0 transition-all duration-300">
+                                        <div key={col.id} className="flex items-center min-w-0">
                                             {renderCell(col, card)}
                                         </div>
                                     ))}
@@ -418,8 +535,18 @@ const ListView: React.FC<ListViewProps> = ({
                                 <p className="text-neutral-400">No leads found</p>
                             </div>
                         )}
-                    </div>
-
+                    </div> */}
+                    {/* Table Body — grouped by phase */}
+                    <PhaseAccordion
+                        columns={columns}
+                        sortedCards={sortedCards}
+                        orderedCols={orderedCols}
+                        gridTemplate={gridTemplate}
+                        onLeadClick={onLeadClick}
+                        renderCell={renderCell}
+                        openPhases={openPhases}
+                        togglePhase={togglePhase}
+                    />
                 </div>
             </div>
 

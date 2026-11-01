@@ -25,6 +25,7 @@ interface LeadCardProps {
     onMove?: (cardId: string, targetColumnId: string) => void;
     onLeadClick?: (lead: any) => void;
     phaseColor?: string;
+    isCompact?: boolean;
 }
 
 const LeadCard: React.FC<LeadCardProps> = ({
@@ -44,6 +45,7 @@ const LeadCard: React.FC<LeadCardProps> = ({
     onMove,
     onLeadClick,
     phaseColor,
+    isCompact = false,
 }) => {
     const {
         attributes,
@@ -97,11 +99,43 @@ const LeadCard: React.FC<LeadCardProps> = ({
         }
     };
 
+    // const getSentimentStyle = (sentiment: string): string => {
+    //     if (sentiment.startsWith('POS')) return 'bg-sentiment-positive text-sentiment-positive-dark';
+    //     if (sentiment.startsWith('NEG')) return 'bg-sentiment-negative text-sentiment-negative-dark';
+    //     if (sentiment.includes('DMU')) return 'bg-sentiment-dmu text-sentiment-dmu-dark';
+    //     return 'bg-sentiment-neutral text-sentiment-neutral-dark';
+    // };
+
+    // const handleIconClick = (e: React.MouseEvent, tab: string) => {
+    //     e.stopPropagation();
+    //     if (isDragging) return;
+    //     if (onLeadClick) {
+    //         const phaseName = allColumns.find(col => col.id === currentColumnId)?.title || '';
+    //         onLeadClick({
+    //             id, name, title, company, chatterDate, internalDate, sentiment,
+    //             phase: phaseName,
+    //             phaseColor: phaseColor || '',
+    //             email: `${name.split(' ')[0].toLowerCase()}@${company.toLowerCase().replace(' ', '')}.com`,
+    //             phone: '(+31) 610887057',
+    //             crmStatus: 'Not yet',
+    //             initialTab: tab,
+    //             linkedinUrl: linkedinUrl || '',
+    //         });
+    //     }
+    // };
+
     const getSentimentStyle = (sentiment: string): string => {
         if (sentiment.startsWith('POS')) return 'bg-sentiment-positive text-sentiment-positive-dark';
         if (sentiment.startsWith('NEG')) return 'bg-sentiment-negative text-sentiment-negative-dark';
         if (sentiment.includes('DMU')) return 'bg-sentiment-dmu text-sentiment-dmu-dark';
         return 'bg-sentiment-neutral text-sentiment-neutral-dark';
+    };
+
+    const getSentimentDotColor = (sentiment: string): string => {
+        if (sentiment.startsWith('POS')) return 'bg-sentiment-positive-dark';
+        if (sentiment.startsWith('NEG')) return 'bg-sentiment-negative-dark';
+        if (sentiment.includes('DMU')) return 'bg-sentiment-dmu-dark';
+        return 'bg-neutral-400';
     };
 
     const handleIconClick = (e: React.MouseEvent, tab: string) => {
@@ -129,49 +163,38 @@ const LeadCard: React.FC<LeadCardProps> = ({
             {...attributes}
             {...listeners}
             onClick={handleCardClick}
-            className="bg-card-bg rounded-lg border-none transition-all duration-200 hover:shadow-md animate-fade-in touch-none select-none cursor-pointer"
+            className="bg-white border border-gray-200 rounded-xl transition-all duration-200 hover:shadow-md animate-fade-in touch-none select-none cursor-pointer"
         >
-            {/* Header: Name + LinkedIn */}
-            <div className='px-5 pt-6'>
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                        <h4 className="flex items-center text-sm font-semibold text-icon-linkedin gap-1 transition-colors">
-                            {name}
-                            <a
-                                href={linkedinUrl || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e: any) => e.stopPropagation()}
-                            >
-                                <LinkedinIcon size={12} />
-                            </a>
-                        </h4>
-                        <div className='mt-1.5 text-xs text-text w-3/4'>
-                            <p>{title} at <span className="font-medium">{company}</span></p>
-                        </div>
-                    </div>
+            {/* Header: Sentiment dot + Name + LinkedIn */}
+            <div className='p-3 pb-3'>
+                <div className="flex items-center gap-2 mb-1.5">
+                    {/* Sentiment dot */}
+                    <span
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getSentimentDotColor(sentiment)}`}
+                        title={sentiment}
+                    />
+                    <h4 className="text-sm font-semibold text-text-heading leading-tight flex-1 truncate">
+                        {name}
+                    </h4>
+                    <a
+                        href={linkedinUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e: any) => e.stopPropagation()}
+                        className="text-icon-linkedin flex-shrink-0"
+                    >
+                        <LinkedinIcon size={12} />
+                    </a>
                 </div>
-
-                {/* Dates */}
-                {(lastLinkedinDate || chatterDate || internalDate) && (
-                    <div className="space-y-1 text-xs text-text pt-3.5 py-2.5">
-                        {lastLinkedinDate && (
-                            <p>Last message date: <span>{formatDate(lastLinkedinDate)}</span></p>
+                <div className='text-xs text-text'>
+                    <p>
+                        {!isCompact && (
+                            <>
+                                {title} · {" "}
+                            </>
                         )}
-                        {chatterDate && (
-                            <p>Chatter task date: <span>{formatDate(chatterDate)}</span></p>
-                        )}
-                        {internalDate && (
-                            <p>Internal task date: <span>{formatDate(internalDate)}</span></p>
-                        )}
-                    </div>
-                )}
-
-                {/* Sentiment Badge */}
-                <div className='pb-10'>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getSentimentStyle(sentiment)}`}>
-                        Chat sentiment: {sentiment}
-                    </span>
+                        <span className="font-medium text-text-heading">{company}</span>
+                    </p>
                 </div>
             </div>
 
